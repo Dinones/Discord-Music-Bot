@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 import sys
 import discord
+import asyncio
 from copy import deepcopy
 from yt_dlp import YoutubeDL
 from typing import TYPE_CHECKING, Optional, Dict, Any
@@ -106,23 +107,22 @@ async def search_youtube_video(Music_Manager: Music_Manager, message: Message, a
         print(ytdl_options)
         args += 'lyrics'
 
-    # Extracts the info from Youtube
-    with YoutubeDL(ytdl_options) as ytdl:
-        try:
-            response = ytdl.extract_info(args, download=False)
-            # The search was successful, but could not find any result
-            if not response.get('entries', {}) and not response.get('title', ''):
-                return {}
-        except:
-            print(
-                STR.G_ACTION_NOT_DONE.format(
-                    user   = message.author.name.capitalize(),
-                    action = 'play something from Youtube',
-                    reason = f'Invalid Youtube input "{args}"'
-                )
-            )
-            # await message.channel.send(MSG.DC_INVALID_LINK.replace('{platform}', 'Youtube'))
+    try:
+        response = await asyncio.to_thread(_extract_info, ytdl_options, args, False)
+
+        # The search was successful, but could not find any result
+        if not response.get('entries', {}) and not response.get('title', ''):
             return {}
+    except:
+        print(
+            STR.G_ACTION_NOT_DONE.format(
+                user   = message.author.name.capitalize(),
+                action = 'play something from Youtube',
+                reason = f'Invalid Youtube input "{args}"'
+            )
+        )
+        # await message.channel.send(MSG.DC_INVALID_LINK.replace('{platform}', 'Youtube'))
+        return {}
 
     if response.get('entries', {}):
         shortest_video = min(response.get('entries', {}), key=lambda video: video['duration'])
@@ -233,17 +233,16 @@ async def download_mp3(Music_Manager: Music_Manager, message: Message, youtube_u
         outtmpl       = os.path.join(output_path, '%(title)s.%(ext)s') # Output path
     )
 
-    with YoutubeDL(ytdl_options) as ytdl:
-        try:
-            video_info = ytdl.extract_info(youtube_url, download = True)
-        except Exception as error:
-            video_info = {}
-            print(
-                STR.YT_INVALID_YOUTUBE_LINK.format(
-                    user   = CONST.TESTING_AUTHOR_NAME,
-                    reason = error
-                )
+    try:
+        video_info = await asyncio.to_thread(_extract_info, ytdl_options, youtube_url, True)
+    except Exception as error:
+        video_info = {}
+        print(
+            STR.YT_INVALID_YOUTUBE_LINK.format(
+                user   = CONST.TESTING_AUTHOR_NAME,
+                reason = error
             )
+        )
 
     return f"{video_info.get('title', '')}.mp3" if video_info else 'ERROR'
 
@@ -267,6 +266,26 @@ def _get_ytdl_options(Music_Manager: Music_Manager, **overrides: Any) -> Dict[st
     options.update(overrides)
 
     return options
+
+###########################################################################################################################
+###########################################################################################################################
+
+def _extract_info(ytdl_options: Dict[str, Any], query: str, download: bool) -> Dict[str, Any]:
+
+    """
+    Blocking yt-dlp extraction helper. Must always be executed in a worker thread.
+
+    Args:
+        ytdl_options (Dict[str, Any]): Options for this yt-dlp operation.
+        query (str): URL or search query to extract.
+        download (bool): Whether yt-dlp should download media.
+
+    Returns:
+        Dict[str, Any]: Extraction result payload from yt-dlp.
+    """
+
+    with YoutubeDL(ytdl_options) as ytdl:
+        return ytdl.extract_info(query, download = download)
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
