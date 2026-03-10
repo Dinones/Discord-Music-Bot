@@ -13,7 +13,7 @@ import sys
 import asyncio
 from time import time
 from typing import TYPE_CHECKING
-from unittest.mock import AsyncMock
+from unittest.mock import Mock, AsyncMock
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -45,10 +45,7 @@ def _download_mp3_from_link(option):
     )
 
     _Music_Manager = Music_Manager()
-    message = AsyncMock(
-        channel = AsyncMock(send = AsyncMock()),
-        author  = AsyncMock(name = CONST.TESTING_AUTHOR_NAME)
-    )
+    message = _build_test_message()
 
     MP3_DOWNLOAD_OUTPUT_PATH = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "..", CONST.TESTING_MP3_DOWNLOAD_OUTPUT_PATH)
@@ -91,10 +88,7 @@ def _search_youtube_video(option):
     )
 
     _Music_Manager = Music_Manager()
-    message = AsyncMock(
-        channel = AsyncMock(send = AsyncMock()),
-        author  = AsyncMock(name = CONST.TESTING_AUTHOR_NAME)
-    )
+    message = _build_test_message()
 
     start_time = time()
     result = asyncio.run(search_youtube_video(_Music_Manager, message, search_video))
@@ -104,6 +98,22 @@ def _search_youtube_video(option):
             title   = result.get('title', '')
         )
     )
+
+###########################################################################################################################
+###########################################################################################################################
+
+def _build_test_message() -> Message:
+    
+    message = Mock(
+        author = Mock(),
+        channel = Mock(
+            send = AsyncMock()
+        )
+    )
+
+    message.author.name = CONST.TESTING_AUTHOR_NAME
+        
+    return message
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################

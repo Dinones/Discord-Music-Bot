@@ -72,7 +72,7 @@ G_ACTION_DONE = \
 
 G_ACTION_NOT_DONE = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
-    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mTried to {"{action}"}: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mTried to {"{action}"}: {RESET_FORMAT}'+\
     f'\033[{COLORS["Yellow"]};{SPECIAL["Italics"]}m{"{reason}"}{RESET_FORMAT}'
 
 G_UNKNOWN_COMMAND_USED = \

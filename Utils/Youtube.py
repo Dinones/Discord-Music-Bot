@@ -11,6 +11,7 @@ import discord
 import asyncio
 from copy import deepcopy
 from yt_dlp import YoutubeDL
+from urllib.parse import urlparse
 from typing import TYPE_CHECKING, Optional, Dict, Any
 from discord import PCMVolumeTransformer, FFmpegPCMAudio
 
@@ -115,12 +116,17 @@ async def search_youtube_video(Music_Manager: Music_Manager, message: Message, a
         Dict[str, Any]: Information about the shortest video found, or an empty dictionary if the search fails.
     """
     
+    args = args.strip()
+
+    if not args:
+        return {}
+
     # If the input is a Youtube link, search it; if not, search the first 2 query results
-    if args.startswith('https://www.youtube.com/'):
+    if _is_youtube_url(args):
         ytdl_options = _get_ytdl_options(Music_Manager, default_search = 'auto')
     else:
         ytdl_options = _get_ytdl_options(Music_Manager, default_search = 'ytsearch2')
-        args += 'lyrics'
+        args = f'{args} lyrics'
 
     try:
         response = await asyncio.to_thread(_extract_info, ytdl_options, args, False)
@@ -309,6 +315,29 @@ def _get_ytdl_options(Music_Manager: Music_Manager, **overrides: Any) -> Dict[st
     options.update(overrides)
 
     return options
+
+###########################################################################################################################
+###########################################################################################################################
+
+def _is_youtube_url(query: str) -> bool:
+
+    """
+    Validate whether the input is a supported YouTube URL.
+
+    Args:
+        query (str): User input.
+
+    Returns:
+        bool: True if query is a YouTube URL, else False.
+    """
+
+    parsed = urlparse(query)
+    host = (parsed.hostname or '').lower()
+
+    if parsed.scheme not in {'http', 'https'}:
+        return False
+
+    return host == 'youtu.be' or host == 'youtube.com' or host.endswith('.youtube.com')
 
 ###########################################################################################################################
 ###########################################################################################################################
