@@ -48,8 +48,6 @@ def save_exception_to_txt(error: BaseException, title: str) -> str:
 
     path = Path(output_path).resolve().as_uri()
 
-    
-
     return path
 
 ###########################################################################################################################

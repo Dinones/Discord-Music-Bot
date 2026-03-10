@@ -16,6 +16,7 @@ crash.log
 .venv
 __pycache__
 Logs/*
+*.mp3
 
 # Github
 !*.gitkeep
