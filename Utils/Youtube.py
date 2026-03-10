@@ -14,6 +14,8 @@ from yt_dlp import YoutubeDL
 from typing import TYPE_CHECKING, Optional, Dict, Any
 from discord import PCMVolumeTransformer, FFmpegPCMAudio
 
+from yt_dlp.utils import DownloadError
+
 # Module may be executed for testing purposes and may require different import paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
@@ -31,6 +33,19 @@ if TYPE_CHECKING:
 ###########################################################################################################################
 
 MODULE_NAME = 'Youtube'
+
+###########################################################################################################################
+###########################################################################################################################
+
+class _SilentYtdlLogger:
+    def debug(self, msg: str) -> None:
+        return
+
+    def warning(self, msg: str) -> None:
+        return
+
+    def error(self, msg: str) -> None:
+        return
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -58,6 +73,7 @@ def configure_ytdl(Music_Manager: Music_Manager) -> None:
         'quiet': True,                          # Doesn't print messages to the console
         'verbose': False,                       # Doesn't print messages to the console
         'no_warnings': True,                    # Only critical error messages will be shown
+        'logger': _SilentYtdlLogger(),          # Prevent yt-dlp from printing its own logs
 
         'postprocessors': [{        
             'key': 'FFmpegExtractAudio',        # Uses FFmpeg to extract audio from the video
@@ -104,7 +120,6 @@ async def search_youtube_video(Music_Manager: Music_Manager, message: Message, a
         ytdl_options = _get_ytdl_options(Music_Manager, default_search = 'auto')
     else:
         ytdl_options = _get_ytdl_options(Music_Manager, default_search = 'ytsearch2')
-        print(ytdl_options)
         args += 'lyrics'
 
     try:
@@ -113,12 +128,21 @@ async def search_youtube_video(Music_Manager: Music_Manager, message: Message, a
         # The search was successful, but could not find any result
         if not response.get('entries', {}) and not response.get('title', ''):
             return {}
-    except:
+    except DownloadError as error:
         print(
             STR.G_ACTION_NOT_DONE.format(
                 user   = message.author.name.capitalize(),
                 action = 'play something from Youtube',
-                reason = f'Invalid Youtube input "{args}"'
+                reason = f'Invalid Youtube input "{args}" ({error})'
+            )
+        )
+        return {}
+    except Exception as error:
+        print(
+            STR.G_ACTION_NOT_DONE.format(
+                user   = message.author.name.capitalize(),
+                action = 'play something from Youtube',
+                reason = f'Unexpected error searching "{args}" ({error})'
             )
         )
         # await message.channel.send(MSG.DC_INVALID_LINK.replace('{platform}', 'Youtube'))
@@ -161,8 +185,19 @@ def get_video_from_spotify_song(Music_Manager: Music_Manager, song_title: str, s
             # The search was successful, but could not find any result
             if not response.get('entries', {}) and not response.get('title', ''):
                 return {}
-        except:
-            print(STR.YT_COULD_NOT_UPDATE_SPOTIFY_SONG.format(reason = f'Invalid Youtube input "{song_title}"'))
+        except DownloadError as error:
+            print(
+                STR.YT_COULD_NOT_UPDATE_SPOTIFY_SONG.format(
+                    reason = f'Invalid Youtube input "{song_title}" ({error})'
+                )
+            )
+            return {}
+        except Exception as error:
+            print(
+                STR.YT_COULD_NOT_UPDATE_SPOTIFY_SONG.format(
+                    reason = f'Unexpected error searching "{song_title}" ({error})'
+                )
+            )
             return {}
 
     if response.get('entries', {}):
@@ -235,12 +270,20 @@ async def download_mp3(Music_Manager: Music_Manager, message: Message, youtube_u
 
     try:
         video_info = await asyncio.to_thread(_extract_info, ytdl_options, youtube_url, True)
+    except DownloadError as error:
+        video_info = {}
+        print(
+            STR.YT_INVALID_YOUTUBE_LINK.format(
+                user   = CONST.TESTING_AUTHOR_NAME,
+                reason = f'Invalid Youtube input "{youtube_url}" ({error})'
+            )
+        )
     except Exception as error:
         video_info = {}
         print(
             STR.YT_INVALID_YOUTUBE_LINK.format(
                 user   = CONST.TESTING_AUTHOR_NAME,
-                reason = error
+                reason = f'Unexpected error searching "{youtube_url}" ({error})'
             )
         )
 
