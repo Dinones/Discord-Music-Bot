@@ -8,6 +8,7 @@ from __future__ import annotations
 import os
 import sys
 import discord
+from copy import deepcopy
 from yt_dlp import YoutubeDL
 from typing import TYPE_CHECKING, Optional, Dict, Any
 from discord import PCMVolumeTransformer, FFmpegPCMAudio
@@ -68,7 +69,7 @@ def configure_ytdl(Music_Manager: Music_Manager) -> None:
 
     # Bypass bot detection and allow access to age-restricted videos
     if os.path.exists(YOUTUBE_COOKIES_PATH):
-        Music_Manager.update(
+        Music_Manager.ytdl_options.update(
             {
                 'cookiefile': YOUTUBE_COOKIES_PATH
             }
@@ -97,15 +98,16 @@ async def search_youtube_video(Music_Manager: Music_Manager, message: Message, a
         Dict[str, Any]: Information about the shortest video found, or an empty dictionary if the search fails.
     """
     
-    # If the input is a Youtube link, search it. If not, search the first 2 query results
+    # If the input is a Youtube link, search it; if not, search the first 2 query results
     if args.startswith('https://www.youtube.com/'):
-        Music_Manager.ytdl_options['default_search'] = 'auto'
+        ytdl_options = _get_ytdl_options(Music_Manager, default_search = 'auto')
     else:
-        Music_Manager.ytdl_options['default_search'] = 'ytsearch2'
+        ytdl_options = _get_ytdl_options(Music_Manager, default_search = 'ytsearch2')
+        print(ytdl_options)
         args += 'lyrics'
 
     # Extracts the info from Youtube
-    with YoutubeDL(Music_Manager.ytdl_options) as ytdl:
+    with YoutubeDL(ytdl_options) as ytdl:
         try:
             response = ytdl.extract_info(args, download=False)
             # The search was successful, but could not find any result
@@ -148,12 +150,12 @@ def get_video_from_spotify_song(Music_Manager: Music_Manager, song_title: str, s
     """
 
     # Fetches top-2 search results
-    Music_Manager.ytdl_options['default_search'] = 'ytsearch2'
+    ytdl_options = _get_ytdl_options(Music_Manager, default_search='ytsearch2')
     # Modify the search query to include song authors and "lyrics" for better results
     song_title += f' {song_authors} lyrics'
 
     # Extracts the info from Youtube
-    with YoutubeDL(Music_Manager.ytdl_options) as ytdl:
+    with YoutubeDL(ytdl_options) as ytdl:
         try: 
             response = ytdl.extract_info(song_title, download = False)
             # The search was successful, but could not find any result
@@ -225,12 +227,13 @@ async def download_mp3(Music_Manager: Music_Manager, message: Message, youtube_u
         str: The name of the saved file.
     """
 
-    # Momentarily enables video downloads
-    Music_Manager.ytdl_options['skip_download'] = False
-    # Sets the output path
-    Music_Manager.ytdl_options['outtmpl'] = os.path.join(output_path, '%(title)s.%(ext)s')
+    ytdl_options = _get_ytdl_options(
+        Music_Manager,
+        skip_download = False,
+        outtmpl       = os.path.join(output_path, '%(title)s.%(ext)s') # Output path
+    )
 
-    with YoutubeDL(Music_Manager.ytdl_options) as ytdl:
+    with YoutubeDL(ytdl_options) as ytdl:
         try:
             video_info = ytdl.extract_info(youtube_url, download = True)
         except Exception as error:
@@ -242,8 +245,28 @@ async def download_mp3(Music_Manager: Music_Manager, message: Message, youtube_u
                 )
             )
 
-    Music_Manager.ytdl_options['skip_download'] = True
     return f"{video_info.get('title', '')}.mp3" if video_info else 'ERROR'
+
+###########################################################################################################################
+###########################################################################################################################
+
+def _get_ytdl_options(Music_Manager: Music_Manager, **overrides: Any) -> Dict[str, Any]:
+
+    """
+    Build a per-call yt-dlp options dictionary to avoid mutating a shared state.
+
+    Args:
+        Music_Manager (Music_Manager): The Music_Manager instance containing base yt-dlp options.
+        **overrides (Any): Options that will be ovewritten for this specific call.
+
+    Returns:
+        Dict[str, Any]: A copy of yt-dlp options for one operation.
+    """
+
+    options = deepcopy(Music_Manager.ytdl_options)
+    options.update(overrides)
+
+    return options
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
