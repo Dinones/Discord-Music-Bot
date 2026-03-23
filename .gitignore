@@ -17,6 +17,7 @@ crash.log
 __pycache__
 Logs/*
 *.mp3
+*.webm
 
 # Github
 !*.gitkeep

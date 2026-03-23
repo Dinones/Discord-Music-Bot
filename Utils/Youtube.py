@@ -12,8 +12,8 @@ import asyncio
 from copy import deepcopy
 from yt_dlp import YoutubeDL
 from urllib.parse import urlparse
-from typing import TYPE_CHECKING, Optional, Dict, Any
 from discord import PCMVolumeTransformer, FFmpegPCMAudio
+from typing import TYPE_CHECKING, Optional, Dict, Any, TypedDict, cast
 
 from yt_dlp.utils import DownloadError
 
@@ -38,7 +38,27 @@ MODULE_NAME = 'Youtube'
 ###########################################################################################################################
 ###########################################################################################################################
 
+class YoutubeVideoInfo(TypedDict, total = False):
+
+    """
+    Typed structure for the YouTube video metadata used by this module.
+    """
+
+    id          : str
+    url         : str
+    title       : str
+    duration    : int
+    webpage_url : str
+
+###########################################################################################################################
+###########################################################################################################################
+
 class _SilentYtdlLogger:
+
+    """
+    Suppress internal YTDL console output.
+    """
+
     def debug(self, msg: str) -> None:
         return
 
@@ -102,7 +122,11 @@ def configure_ytdl(Music_Manager: Music_Manager) -> None:
 ###########################################################################################################################
 ###########################################################################################################################
 
-async def search_youtube_video(Music_Manager: Music_Manager, message: Message, args: str) -> Dict[str, Any]:
+async def search_youtube_video(
+    Music_Manager: Music_Manager,
+    message: Message,
+    args: str
+) -> Optional[YoutubeVideoInfo]:
 
     """
     Searches for a YouTube video based on the provided input and returns information about the shortest video found.
@@ -113,13 +137,13 @@ async def search_youtube_video(Music_Manager: Music_Manager, message: Message, a
         args (str): The search query or YouTube URL.
 
     Returns:
-        Dict[str, Any]: Information about the shortest video found, or an empty dictionary if the search fails.
+        Optional[YoutubeVideoInfo]: Information about the shortest video found, or None if the search fails.
     """
     
     args = args.strip()
 
     if not args:
-        return {}
+        return None
 
     # If the input is a Youtube link, search it; if not, search the first 2 query results
     if _is_youtube_url(args):
@@ -133,38 +157,41 @@ async def search_youtube_video(Music_Manager: Music_Manager, message: Message, a
 
         # The search was successful, but could not find any result
         if not response.get('entries', {}) and not response.get('title', ''):
-            return {}
+            return None
     except DownloadError as error:
         print(
-            STR.G_ACTION_NOT_DONE.format(
+            STR.YT_INVALID_YOUTUBE_INPUT.format(
                 user   = message.author.name.capitalize(),
                 action = 'play something from Youtube',
                 reason = f'Invalid Youtube input "{args}" ({error})'
             )
         )
-        return {}
+        return None
     except Exception as error:
         print(
-            STR.G_ACTION_NOT_DONE.format(
+            STR.YT_INVALID_YOUTUBE_INPUT.format(
                 user   = message.author.name.capitalize(),
-                action = 'play something from Youtube',
                 reason = f'Unexpected error searching "{args}" ({error})'
             )
         )
         # await message.channel.send(MSG.DC_INVALID_LINK.replace('{platform}', 'Youtube'))
-        return {}
+        return None
 
     if response.get('entries', {}):
         shortest_video = min(response.get('entries', {}), key=lambda video: video['duration'])
     else:
         shortest_video = response
     
-    return shortest_video
+    return cast(YoutubeVideoInfo, shortest_video)
 
 ###########################################################################################################################
 ###########################################################################################################################
 
-def get_video_from_spotify_song(Music_Manager: Music_Manager, song_title: str, song_authors: str) -> Dict[str, Any]:
+def get_video_from_spotify_song(
+    Music_Manager: Music_Manager,
+    song_title: str,
+    song_authors: str
+) -> Optional[YoutubeVideoInfo]:
 
     """
     Searches for a YouTube video based on a Spotify song's title and authors and returns the information about the
@@ -176,7 +203,7 @@ def get_video_from_spotify_song(Music_Manager: Music_Manager, song_title: str, s
         song_authors (str): The name(s) of the song's author(s).
 
     Returns:
-        Dict[str, Any]: A dictionary containing video details if found, otherwise an empty dictionary.
+        Optional[YoutubeVideoInfo]: Video details if found, otherwise None.
     """
 
     # Fetches top-2 search results
@@ -190,28 +217,28 @@ def get_video_from_spotify_song(Music_Manager: Music_Manager, song_title: str, s
             response = ytdl.extract_info(song_title, download = False)
             # The search was successful, but could not find any result
             if not response.get('entries', {}) and not response.get('title', ''):
-                return {}
+                return None
         except DownloadError as error:
             print(
                 STR.YT_COULD_NOT_UPDATE_SPOTIFY_SONG.format(
                     reason = f'Invalid Youtube input "{song_title}" ({error})'
                 )
             )
-            return {}
+            return None
         except Exception as error:
             print(
                 STR.YT_COULD_NOT_UPDATE_SPOTIFY_SONG.format(
                     reason = f'Unexpected error searching "{song_title}" ({error})'
                 )
             )
-            return {}
+            return None
 
     if response.get('entries', {}):
         shortest_video = min(response.get('entries', {}), key=lambda video: video['duration'])
     else:
         shortest_video = response
     
-    return shortest_video
+    return cast(YoutubeVideoInfo, shortest_video)
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -253,7 +280,12 @@ def get_audio_player(raw_audio_url: str) -> Optional[PCMVolumeTransformer]:
 ###########################################################################################################################
 ###########################################################################################################################
 
-async def download_mp3(Music_Manager: Music_Manager, message: Message, youtube_url: str, output_path: str) -> str:
+async def download_mp3(
+    Music_Manager: Music_Manager,
+    message: Message,
+    youtube_url: str,
+    output_path: str
+) -> Optional[str]:
 
     """
     Downloads an MP3 file from a given YouTube URL using the specified Music_Manager configuration.
@@ -265,7 +297,7 @@ async def download_mp3(Music_Manager: Music_Manager, message: Message, youtube_u
         output_path (str): The output directory where the MP3 file will be saved.
 
     Returns:
-        str: The name of the saved file.
+        Optional[str]: The saved file name, or None if download fails.
     """
 
     ytdl_options = _get_ytdl_options(
@@ -279,21 +311,21 @@ async def download_mp3(Music_Manager: Music_Manager, message: Message, youtube_u
     except DownloadError as error:
         video_info = {}
         print(
-            STR.YT_INVALID_YOUTUBE_LINK.format(
-                user   = CONST.TESTING_AUTHOR_NAME,
+            STR.YT_INVALID_YOUTUBE_INPUT.format(
+                user   = message.author.name.capitalize(),
                 reason = f'Invalid Youtube input "{youtube_url}" ({error})'
             )
         )
     except Exception as error:
         video_info = {}
         print(
-            STR.YT_INVALID_YOUTUBE_LINK.format(
-                user   = CONST.TESTING_AUTHOR_NAME,
+            STR.YT_INVALID_YOUTUBE_INPUT.format(
+                user   = message.author.name.capitalize(),
                 reason = f'Unexpected error searching "{youtube_url}" ({error})'
             )
         )
 
-    return f"{video_info.get('title', '')}.mp3" if video_info else 'ERROR'
+    return f"{video_info.get('title', '')}.mp3" if video_info else None
 
 ###########################################################################################################################
 ###########################################################################################################################

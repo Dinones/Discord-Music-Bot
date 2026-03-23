@@ -62,6 +62,16 @@ def _download_mp3_from_link(option):
     video_title = asyncio.run(
         download_mp3(_Music_Manager, message, CONST.TESTING_YOUTUBE_LINK, MP3_DOWNLOAD_OUTPUT_PATH)
     )
+
+    if not video_title:
+        return print(
+            STR.G_ACTION_NOT_DONE.format(
+                user   = message.author.name.capitalize(),
+                action = "download an MP3 from Youtube",
+                reason = "Download failed"
+            )
+        )
+
     output_video_path = os.path.join(MP3_DOWNLOAD_OUTPUT_PATH, video_title)
 
     print(STR.YT_AUDIO_DOWNLOADED.format(output_path = output_video_path))
@@ -92,6 +102,16 @@ def _search_youtube_video(option):
 
     start_time = time()
     result = asyncio.run(search_youtube_video(_Music_Manager, message, search_video))
+
+    if not result:
+        return print(
+            STR.G_ACTION_NOT_DONE.format(
+                user   = message.author.name.capitalize(),
+                action = "search something on Youtube",
+                reason = "No results found"
+            )
+        )
+
     print(
         STR.YT_VIDEO_FOUND.format(
             seconds = str(round(time() - start_time, 2)),

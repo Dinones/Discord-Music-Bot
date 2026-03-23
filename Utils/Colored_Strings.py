@@ -169,9 +169,9 @@ YT_VIDEO_FOUND = \
     f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}m: {RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]};{SPECIAL["Italics"]}m{"{title}"}{RESET_FORMAT}'
 
-YT_INVALID_YOUTUBE_LINK = \
+YT_INVALID_YOUTUBE_INPUT = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
-    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mTried to play something from Youtube: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mTried to play something from Youtube: {RESET_FORMAT}'+\
     f'\033[{COLORS["Yellow"]};{SPECIAL["Italics"]}m{"{reason}"}{RESET_FORMAT}'
 
 YT_COULD_NOT_UPDATE_SPOTIFY_SONG = \
