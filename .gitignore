@@ -16,6 +16,12 @@ crash.log
 .venv
 __pycache__
 Logs/*
+*.mp3
+*.webm
 
 # Github
 !*.gitkeep
+
+# Github Codespaces
+awscliv2.zip
+aws/
