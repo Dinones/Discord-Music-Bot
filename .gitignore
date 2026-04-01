@@ -21,3 +21,7 @@ Logs/*
 
 # Github
 !*.gitkeep
+
+# Github Codespaces
+awscliv2.zip
+aws/
