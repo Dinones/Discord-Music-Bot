@@ -76,7 +76,7 @@ data "aws_iam_policy_document" "secret_reader" {
         ]
 
         resources = [
-            aws_secretsmanager_secret.app.arn
+            aws_secretsmanager_secret.discord_bot_secret.arn
         ]
     }
 }

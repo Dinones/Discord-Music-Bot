@@ -1,11 +1,11 @@
 output "secret_arn" {
     description = "Unique ID of the created secret"
-    value       = aws_secretsmanager_secret.app.arn
+    value       = aws_secretsmanager_secret.discord_bot_secret.arn
 }
 
 output "secret_name" {
     description = "Name of the created secret"
-    value       = aws_secretsmanager_secret.app.name
+    value       = aws_secretsmanager_secret.discord_bot_secret.name
 }
 
 output "secret_reader_iam_user_name" {
