@@ -18,6 +18,7 @@ __pycache__
 Logs/*
 *.mp3
 *.webm
+.codex
 
 # Github
 !*.gitkeep

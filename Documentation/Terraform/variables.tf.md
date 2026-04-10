@@ -1,8 +1,7 @@
 # 📜⠀variables.tf
 
 This file defines input variables to change values without rewriting the Terraform resources.
-
-## 🧩⠀aws_region
+aws_region
 
 This variable defines the AWS region where Terraform will create resources.
 
@@ -13,6 +12,8 @@ variable "aws_region" {
     default     = "eu-west-1"
 }
 ```
+
+<br>
 
 ## 🧩⠀project_name
 
@@ -26,6 +27,8 @@ variable "project_name" {
 }
 ```
 
+<br>
+
 ## 🧩⠀secret_name
 
 This variable sets the name of the Secrets Manager secret.
@@ -37,6 +40,8 @@ variable "secret_name" {
     default     = "discord_music_bot_secrets"
 }
 ```
+
+<br>
 
 ## 🧩⠀create_secret_reader_user
 
@@ -50,6 +55,8 @@ variable "create_secret_reader_user" {
 }
 ```
 
+<br>
+
 ## 🧩⠀secret_reader_user_name
 
 This variable defines the username for the restricted IAM user.
@@ -61,6 +68,8 @@ variable "secret_reader_user_name" {
     default     = "discord_music_bot_secret_reader"
 }
 ```
+
+<br>
 
 ## 🧩⠀create_secret_reader_access_key
 
