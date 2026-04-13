@@ -404,4 +404,3 @@ if __name__ == "__main__":
     import Debug.Youtube_Debug
 
     Debug.Youtube_Debug.main_menu()
-    print()
