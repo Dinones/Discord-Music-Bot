@@ -11,70 +11,60 @@ from __future__ import annotations
 import os
 import sys
 import unittest
-from typing import TYPE_CHECKING
-from unittest.mock import Mock, AsyncMock
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 import Utils.Youtube
-import Utils.Constants as CONST
-from Utils.Music_Manager import Music_Manager
-
-if TYPE_CHECKING:
-    from discord import Message
+from Tests.Helpers.helpers import _color_error_message_in_red
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
 ###########################################################################################################################
 
-class TestSearchYoutubeVideo(unittest.IsolatedAsyncioTestCase):
-    async def test_find_song_by_youtube_url(self) -> None:
+class Test_Is_Youtube_URL(unittest.TestCase):
 
-        _Music_Manager = Music_Manager()
-        message = _build_test_message()
+    def test_is_youtube_url_accepts_supported_youtube_domains(self) -> None:
 
-        result = await Utils.Youtube.search_youtube_video(_Music_Manager, message, CONST.TESTING_YOUTUBE_LINK)
+        """
+        Test that _is_youtube_url() accepts supported YouTube domains and subdomains.
+        """
 
-        self.assertIsNotNone(result)
-        self.assertGreater(len(result.keys()), 0)
-
-    #######################################################################################################################
-    #######################################################################################################################
-
-    async def test_find_song_by_youtube_search(self) -> None:
-
-        _Music_Manager = Music_Manager()
-        message = _build_test_message()
-
-        result = await Utils.Youtube.search_youtube_video(_Music_Manager, message, CONST.TESTING_YOUTUBE_QUERY)
-
-        self.assertIsNotNone(result)
-        self.assertGreater(len(result.keys()), 0)
+        for url in (
+            "https://www.youtube.com/watch?v=abc123",
+            "https://youtube.com/watch?v=abc123",
+            "https://m.youtube.com/watch?v=abc123",
+            "https://music.youtube.com/watch?v=abc123",
+            "https://youtu.be/abc123"
+        ):
+            self.assertTrue(
+                Utils.Youtube._is_youtube_url(url),
+                _color_error_message_in_red(f'The valid "{url}" URL has been flagged as invalid.')
+            )
 
     #######################################################################################################################
     #######################################################################################################################
 
+    def test_is_youtube_url_rejects_invalid_domains_or_schemes(self) -> None:
 
+        """
+        Test that _is_youtube_url() rejects non-YouTube domains and invalid schemes.
+        """
 
-###########################################################################################################################
-###########################################################################################################################
-
-def _build_test_message() -> Message:
-    
-    message = Mock(
-        author = Mock(),
-        channel = Mock(
-            send = AsyncMock()
-        )
-    )
-
-    message.author.name = CONST.TESTING_AUTHOR_NAME
-        
-    return message
+        for url in (
+            "https://example.com/watch?v=abc123",
+            "https://youtube.fake/watch?v=abc123",
+            "ftp://youtube.com/watch?v=abc123",
+            "not a url",
+            ""
+        ):
+            self.assertFalse(
+                Utils.Youtube._is_youtube_url(url),
+                _color_error_message_in_red(f'The invalid "{url}" URL was flagged as valid.')
+            )
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
 ###########################################################################################################################
 
 if __name__ == "__main__":
-    unittest.main(buffer=True)
+    unittest.main(buffer = True)

@@ -22,5 +22,5 @@ TESTING_YOUTUBE_QUERY = 'La bbesita bb lean'
 TESTING_MP3_DOWNLOAD_OUTPUT_PATH = 'Media/Audios/'
 
 TESTING_SPOTIFY_SONG_LINK = 'https://open.spotify.com/track/5DoLhdU27owX1NMrKLUbUl?si=a3aee66406344cf7'
-TESTING_SPOTIFY_PLAYLIST_LINK = 'https://open.spotify.com/playlist/3VTNKj06egPldYJqDPYiII?si=9039eea03c8f4ae6'
+TESTING_SPOTIFY_PLAYLIST_LINK = 'https://open.spotify.com/playlist/37i9dQZEVXbNFJfN1Vw8d9?si=2e2983d05c294c91'
 TESTING_SPOTIFY_ALBUM_LINK = 'https://open.spotify.com/album/3RQQmkQEvNCY4prGKE6oc5?si=8a7197a0378647b6'
