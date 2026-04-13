@@ -58,9 +58,9 @@ ERROR = f'\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[X] {RESET_FORMAT}'
 G_COULD_NOT_GET_AWS_SECRETS = \
     f'{ERROR}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{module}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mCould not get AWS secrets. Error: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]};{SPECIAL["Italics"]}m{"{error}"} {RESET_FORMAT}'+\
+    f'\033[{COLORS["Red"]}m{"{error}"} {RESET_FORMAT}'+\
     f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mA log has been generated: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]};{SPECIAL["Italics"]}m{"{log_path}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Red"]}m{"{log_path}"}{RESET_FORMAT}'
 
 G_BOT_INITIALIZED = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Green"]}mBot initialized successfully!{RESET_FORMAT}'
@@ -68,27 +68,27 @@ G_BOT_INITIALIZED = \
 G_ACTION_DONE = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mTried to {"{action}"}: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Green"]};{SPECIAL["Italics"]}m{"{result}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Green"]}m{"{result}"}{RESET_FORMAT}'
 
 G_ACTION_NOT_DONE = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mTried to {"{action}"}: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Yellow"]};{SPECIAL["Italics"]}m{"{reason}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Yellow"]}m{"{reason}"}{RESET_FORMAT}'
 
 G_UNKNOWN_COMMAND_USED = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mTried to use a command that does not exist: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Yellow"]};{SPECIAL["Italics"]}m{"{command}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Yellow"]}m{"{command}"}{RESET_FORMAT}'
 
 G_INVALID_PATH_ERROR = \
     f'{ERROR}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{module}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mInvalid path: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]};{SPECIAL["Italics"]}m{"{path}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Red"]}m{"{path}"}{RESET_FORMAT}'
 
 G_SONG_PLAYER_ERROR = \
     f'{ERROR}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{module}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mSong player error: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]};{SPECIAL["Italics"]}m{"{error}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Red"]}m{"{error}"}{RESET_FORMAT}'
 
 ###########################################################################################################################
 ######################################################     MENU     #######################################################
@@ -117,7 +117,7 @@ M_SELECTED_OPTION = \
     f'\033[{COLORS["Green"]}m{"{option}"}{RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}m selected: {RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]}m{"{action} "}{RESET_FORMAT}'+\
-    f'\033[{COLORS["Green"]};{SPECIAL["Italics"]}m{"{path}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Green"]}m{"{path}"}{RESET_FORMAT}'
 
 ###########################################################################################################################
 ##################################################     MUSIC MANAGER     ##################################################
@@ -129,22 +129,22 @@ MM_BACKGOUND_PROCESS_SONG_THREAD_INITIALIZED = \
 MM_SONG_LOADED_NORMAL = \
     f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mAdded a song to the end of the queue: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Blue"]};{SPECIAL["Italics"]}m{"{title}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Blue"]}m{"{title}"}{RESET_FORMAT}'
 
 MM_SONG_LOADED_PRIORITY = \
     f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mAdded a song to the priority queue: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Blue"]};{SPECIAL["Italics"]}m{"{title}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Blue"]}m{"{title}"}{RESET_FORMAT}'
 
 MM_SONG_LOADED_NOW = \
     f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mSkipped the current song to play: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Blue"]};{SPECIAL["Italics"]}m{"{title}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Blue"]}m{"{title}"}{RESET_FORMAT}'
 
 MM_PLAYLIST_LOADED_NORMAL = \
     f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mAdded {RESET_FORMAT}'+\
-    f'\033[{COLORS["Blue"]};{SPECIAL["Italics"]}m{"{number}"}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]}m{"{number}"}{RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}m songs to the end of the queue{RESET_FORMAT}'
 
 ###########################################################################################################################
@@ -155,29 +155,29 @@ YT_COOKIES_FILE_NOT_FOUND = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[Youtube] {RESET_FORMAT}'+\
     f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mCould not load Youtube cookies file: {RESET_FORMAT}'+\
     f'\033[{COLORS["Yellow"]}mFile does not exist {RESET_FORMAT}'+\
-    f'\033[{COLORS["Yellow"]};{SPECIAL["Italics"]}m"{"{path}"}"{RESET_FORMAT}'
+    f'\033[{COLORS["Yellow"]}m"{"{path}"}"{RESET_FORMAT}'
 
 YT_AUDIO_DOWNLOADED = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[Youtube] {RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mFile downloaded: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Green"]};{SPECIAL["Italics"]}m{"{output_path}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Green"]}m{"{output_path}"}{RESET_FORMAT}'
 
 YT_VIDEO_FOUND = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[Youtube] {RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mVideo found {RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]}m({"{seconds}"}s){RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}m: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Green"]};{SPECIAL["Italics"]}m{"{title}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Green"]}m{"{title}"}{RESET_FORMAT}'
 
 YT_INVALID_YOUTUBE_INPUT = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mTried to play something from Youtube: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Yellow"]};{SPECIAL["Italics"]}m{"{reason}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Yellow"]}m{"{reason}"}{RESET_FORMAT}'
 
 YT_COULD_NOT_UPDATE_SPOTIFY_SONG = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[Youtube] {RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mCould not update a Spotify with Youtube info: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Yellow"]};{SPECIAL["Italics"]}m{"{reason}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Yellow"]}m{"{reason}"}{RESET_FORMAT}'
 
 ###########################################################################################################################
 #####################################################     SPOTIFY     #####################################################
@@ -200,10 +200,10 @@ SP_SONGS_FOUND = \
 
 EH_COMMAND_LOADED = \
     f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Blue"]}mCommand {RESET_FORMAT}'+\
-    f'\033[{COLORS["Blue"]};{SPECIAL["Italics"]}m{"{command_name}"}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]}m{"{command_name}"}{RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}m loaded {RESET_FORMAT}'+\
     f'\033[{COLORS["Magenta"]};{SPECIAL["Bold"]}m{"({index}/{total_lenght})"}{RESET_FORMAT}'
 
 EH_STT_TRANSCRIPTION = \
     f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Blue"]}mTranscription: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Blue"]};{SPECIAL["Italics"]}m{"{transcription}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Blue"]}m{"{transcription}"}{RESET_FORMAT}'

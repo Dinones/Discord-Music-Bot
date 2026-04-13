@@ -116,6 +116,11 @@ Before running Terraform, authenticate with an AWS identity that has permission 
 - IAM policies
 - IAM access keys
 
+Use the following command to authenticate:
+```bash
+aws configure
+```
+
 > [!CAUTION]
 > Please, do **NOT** use your root account to run the Terraform. Use an account that follows the AWS least-privilege principles.
 
@@ -128,8 +133,12 @@ Before running Terraform, authenticate with an AWS identity that has permission 
 Open a terminal in the `Cloud/` and run:
 
 ```bash
-terraform init -migrate-state -backend-config="bucket=bucket-name"
+cd Cloud/
+terraform init -reconfigure -backend-config="bucket=bucket-name"
 ```
+
+> [!CAUTION]
+> Please, note that `"bucket=bucket-name"` contains the key `"bucket=..."`.
 
 What this does:
 

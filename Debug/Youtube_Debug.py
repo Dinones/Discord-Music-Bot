@@ -155,6 +155,7 @@ def main_menu():
 
         if option in menu_options:
             menu_options[option](option)
+            print()
         else:
             print('\n' + STR.M_INVALID_OPTION.format(module = MODULE_NAME) + '\n')
 
@@ -163,4 +164,3 @@ def main_menu():
 
 if __name__ == "__main__":
     main_menu()
-    print()
