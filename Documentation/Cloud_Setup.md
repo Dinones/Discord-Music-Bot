@@ -134,7 +134,7 @@ Open a terminal in the `Cloud/` and run:
 
 ```bash
 cd Cloud/
-terraform init -migrate-state -backend-config="bucket=bucket-name"
+terraform init -reconfigure -backend-config="bucket=bucket-name"
 ```
 
 > [!CAUTION]
