@@ -12,6 +12,7 @@ import os
 import sys
 import discord
 import asyncio
+from pathlib import Path
 from copy import deepcopy
 from yt_dlp import YoutubeDL
 from urllib.parse import urlparse
@@ -20,23 +21,24 @@ from typing import TYPE_CHECKING, Optional, Dict, Any, TypedDict, cast
 
 from yt_dlp.utils import DownloadError
 
-# Module may be executed for testing purposes and may require different import paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # from Utils import Messages as MSG
 from Utils import Constants as CONST
 from Utils import Colored_Strings as STR
+from Utils.Logs import save_exception_to_txt
 
 # Import types
 if TYPE_CHECKING:
-    from Utils.Music_Manager import Music_Manager
     from discord import Message
+    from Utils.Music_Manager import Music_Manager
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
 ###########################################################################################################################
 
 MODULE_NAME = 'Youtube'
+
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -161,15 +163,19 @@ async def search_youtube_video(
         # The search was successful, but could not find any result
         if not response.get('entries', {}) and not response.get('title', ''):
             return None
+ 
+    # This specific error will raise when no valid Youtube cookies are provided
     except DownloadError as error:
         print(
             STR.YT_INVALID_YOUTUBE_INPUT.format(
                 user   = message.author.name.capitalize(),
                 action = 'play something from Youtube',
-                reason = f'Invalid Youtube input "{args}" ({error})'
+                reason = f'Could not find "{args}" ({error}).'
             )
         )
+        log_path = save_exception_to_txt(error = error, title = 'Youtube_Search')
         return None
+
     except Exception as error:
         print(
             STR.YT_INVALID_YOUTUBE_INPUT.format(
@@ -177,6 +183,7 @@ async def search_youtube_video(
                 reason = f'Unexpected error searching "{args}" ({error})'
             )
         )
+        log_path = save_exception_to_txt(error = error, title = 'Youtube_Search')
         # await message.channel.send(MSG.DC_INVALID_LINK.replace('{platform}', 'Youtube'))
         return None
 
@@ -222,9 +229,10 @@ def get_video_from_spotify_song(
             if not response.get('entries', {}) and not response.get('title', ''):
                 return None
         except DownloadError as error:
+            log_path = save_exception_to_txt(error = error, title = 'Youtube_Spotify_Search')
             print(
                 STR.YT_COULD_NOT_UPDATE_SPOTIFY_SONG.format(
-                    reason = f'Invalid Youtube input "{song_title}" ({error})'
+                    reason = f'Invalid Youtube input "{song_title}" ({error}). A log has been generated: {log_path}'
                 )
             )
             return None
@@ -314,10 +322,11 @@ async def download_mp3(
 
     except DownloadError as error:
         video_info = {}
+        log_path = save_exception_to_txt(error = error, title = 'Youtube_Download')
         print(
             STR.YT_INVALID_YOUTUBE_INPUT.format(
                 user   = message.author.name.capitalize(),
-                reason = f'Invalid Youtube input "{youtube_url}" ({error})'
+                reason = f'Invalid Youtube input "{youtube_url}" ({error}). A log has been generated: {log_path}'
             )
         )
 
@@ -330,7 +339,9 @@ async def download_mp3(
             )
         )
 
-    return f"{video_info.get('title', '')}.mp3" if video_info else None
+    abs_path = Path(f"{os.path.join(output_path, video_info.get('title', ''))}.mp3").resolve().as_uri()
+
+    return abs_path if video_info else None
 
 ###########################################################################################################################
 ###########################################################################################################################

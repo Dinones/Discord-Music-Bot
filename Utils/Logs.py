@@ -9,10 +9,15 @@
 from __future__ import annotations
 
 import os
+import sys
 import re
 import time
 import traceback
 from pathlib import Path
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from Utils import Colored_Strings as STR
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
@@ -47,6 +52,8 @@ def save_exception_to_txt(error: BaseException, title: str) -> str:
         log.write(content)
 
     path = Path(output_path).resolve().as_uri()
+
+    print(STR.LOG_CREATED.format(log_path = path))
 
     return path
 

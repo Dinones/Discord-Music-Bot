@@ -35,7 +35,6 @@ MODULE_NAME = 'Youtube'
 # 1. Download MP3 from Youtube link
 def _download_mp3_from_link(option):
     print(
-        '\n' + 
         STR.M_SELECTED_OPTION.format(
             module = MODULE_NAME,
             option = option,
@@ -59,11 +58,12 @@ def _download_mp3_from_link(option):
             )
         )
 
-    video_title = asyncio.run(
+    start_time = time()
+    output_video_path = asyncio.run(
         download_mp3(_Music_Manager, message, CONST.TESTING_YOUTUBE_LINK, MP3_DOWNLOAD_OUTPUT_PATH)
     )
 
-    if not video_title:
+    if not output_video_path:
         return print(
             STR.G_ACTION_NOT_DONE.format(
                 user   = message.author.name.capitalize(),
@@ -72,9 +72,12 @@ def _download_mp3_from_link(option):
             )
         )
 
-    output_video_path = os.path.join(MP3_DOWNLOAD_OUTPUT_PATH, video_title)
-
-    print(STR.YT_AUDIO_DOWNLOADED.format(output_path = output_video_path))
+    print(
+        STR.YT_AUDIO_DOWNLOADED.format(
+            seconds     = str(round(time() - start_time, 2)),
+            output_path = output_video_path
+        )
+    )
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -88,7 +91,6 @@ def _search_youtube_video(option):
         search_video = CONST.TESTING_YOUTUBE_QUERY
 
     print(
-        '\n' + 
         STR.M_SELECTED_OPTION.format(
             module = MODULE_NAME,
             option = option,
@@ -154,6 +156,7 @@ def main_menu():
         }
 
         if option in menu_options:
+            print()
             menu_options[option](option)
             print()
         else:

@@ -137,7 +137,7 @@ cd Cloud/
 terraform init -reconfigure -backend-config="bucket=bucket-name"
 ```
 
-> [!CAUTION]
+> [!WARN]
 > Please, note that `"bucket=bucket-name"` contains the key `"bucket=..."`.
 
 What this does:

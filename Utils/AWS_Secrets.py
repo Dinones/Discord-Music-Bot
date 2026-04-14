@@ -49,18 +49,16 @@ def get_secrets() -> Dict[str, Any]:
 
     try:
         get_secret_value_response = client.get_secret_value(SecretId = CONST.SECRET_NAME)
+
     except Exception as error:
-        log_path = save_exception_to_txt(error = error, title = 'Retrieve_Secrets')
         print(
-            '\n' +
             STR.G_COULD_NOT_GET_AWS_SECRETS.format(
                 module   = MODULE_NAME,
-                error    = error,
-                log_path = log_path
-            ) +
-            '\n'
+                error    = error
+            )
         )
-        exit()
+        log_path = save_exception_to_txt(error = error, title = 'Retrieve_Secrets')
+        return
 
     return json.loads(get_secret_value_response["SecretString"])
 
@@ -69,4 +67,5 @@ def get_secrets() -> Dict[str, Any]:
 ###########################################################################################################################
 
 if __name__ == "__main__":
-    print('\n' + json.dumps(get_secrets(), indent=4, ensure_ascii=False, default=str) + '\n')
+    print(json.dumps(get_secrets(), indent=4, ensure_ascii=False, default=str))
+    print()

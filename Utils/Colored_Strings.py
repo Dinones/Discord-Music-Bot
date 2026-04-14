@@ -58,9 +58,7 @@ ERROR = f'\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[X] {RESET_FORMAT}'
 G_COULD_NOT_GET_AWS_SECRETS = \
     f'{ERROR}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{module}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mCould not get AWS secrets. Error: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]}m{"{error}"} {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mA log has been generated: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]}m{"{log_path}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Red"]}m{"{error}"} {RESET_FORMAT}'
 
 G_BOT_INITIALIZED = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Green"]}mBot initialized successfully!{RESET_FORMAT}'
@@ -159,7 +157,9 @@ YT_COOKIES_FILE_NOT_FOUND = \
 
 YT_AUDIO_DOWNLOADED = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[Youtube] {RESET_FORMAT}'+\
-    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mFile downloaded: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mFile downloaded {RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]}m({"{seconds}"}s){RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}m: {RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]}m{"{output_path}"}{RESET_FORMAT}'
 
 YT_VIDEO_FOUND = \
@@ -207,3 +207,12 @@ EH_COMMAND_LOADED = \
 EH_STT_TRANSCRIPTION = \
     f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Blue"]}mTranscription: {RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]}m{"{transcription}"}{RESET_FORMAT}'
+
+###########################################################################################################################
+######################################################     LOGS     #######################################################
+###########################################################################################################################
+
+LOG_CREATED = \
+    f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Logs] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mA new log has been generated: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]}m{"{log_path}"}{RESET_FORMAT}'
