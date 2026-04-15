@@ -24,9 +24,20 @@ resource "aws_secretsmanager_secret" "discord_bot_secret" {
     }
 }
 
+resource "aws_secretsmanager_secret" "youtube_cookies_secret" {
+    name                    = var.youtube_cookies_secret_name
+    description             = "Discord Music Bot YouTube Cookies"
+    recovery_window_in_days = 7
+
+    tags = {
+        Project = var.project_name
+        Managed = "Terraform"
+    }
+}
+
 data "aws_iam_policy_document" "secret_reader" {
     statement {
-        sid    = "ReadOnlyBotSecret"
+        sid    = "ReadOnlyBotSecrets"
         effect = "Allow"
 
         actions = [
@@ -34,7 +45,8 @@ data "aws_iam_policy_document" "secret_reader" {
         ]
 
         resources = [
-            aws_secretsmanager_secret.discord_bot_secret.arn
+            aws_secretsmanager_secret.discord_bot_secret.arn,
+            aws_secretsmanager_secret.youtube_cookies_secret.arn
         ]
     }
 }

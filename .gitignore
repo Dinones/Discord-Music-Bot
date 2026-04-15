@@ -26,3 +26,6 @@ Logs/*
 # Github Codespaces
 awscliv2.zip
 aws/
+
+# Credentials
+Youtube_Cookies.txt

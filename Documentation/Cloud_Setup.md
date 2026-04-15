@@ -60,12 +60,13 @@ You do **NOT** need to manually download or upload the `terraform.tfstate` file.
 
 The Terraform in this project currently creates:
 
-- One AWS Secrets Manager secret.
-- One restricted IAM user that can read only that secret.
+- One AWS Secrets Manager secret for the bot JSON configuration.
+- One AWS Secrets Manager secret for the YouTube cookies file.
+- One restricted IAM user that can read only those two secrets.
 - One access key for that restricted IAM user that will allow the server to authenticate with that IAM user.
 
 > [!NOTE]
-> The Terraform creates the secret itself, but not the JSON content inside the secret. That means the secret value must be filled manually in AWS. Read section [Fill the Secret Value in AWS](#sec:fill-secret-value).
+> The Terraform creates the secret containers, but not their values. That means both secret values must be filled manually in AWS. Read section [Fill the Secret Values in AWS](#sec:fill-secret-value).
 
 <br>
 
@@ -112,6 +113,7 @@ You can now safely delete any downloaded folders like `aws/` or `awscliv2.zip`.
 Before running Terraform, authenticate with an AWS identity that has permission to read the S3 bucket mentioned before and create:
 
 - Secrets Manager secrets
+- Secrets Manager secret values
 - IAM users
 - IAM policies
 - IAM access keys
@@ -130,7 +132,7 @@ aws configure
 
 ### 🚀ㅤInitialize Terraform
 
-Open a terminal in the `Cloud/` and run:
+Open a terminal in the root folder and run:
 
 ```bash
 cd Cloud/
@@ -212,12 +214,16 @@ Set:
 
 <br>
 
-## 🔑ㅤFill the Secret Value in AWS
+## 🔑ㅤFill the Secret Values in AWS
 <a id="sec:fill-secret-value"></a>
 
-After the secret has been created, go to:
+After the secrets have been created, go to:
 
 `AWS Console` → `Secrets Manager` **→** *Select the secret* → `Edit secret value`
+
+<hr>
+
+### 🔐ㅤFill `discord_music_bot_secrets`
 
 Set the JSON content with:
 
@@ -232,4 +238,14 @@ Set the JSON content with:
 ```
 
 > [!NOTE]
-> The current Terraform does not manage this JSON value, so if the file is filled manually and Terraform is run again later, Terraform should not replace it with an empty JSON object.
+> Terraform does not manage this secret value, so if the JSON is filled manually and Terraform is run again later, Terraform should not replace it with an empty JSON object.
+
+<hr>
+
+### 🔐ㅤFill `discord_music_bot_youtube_cookies`
+
+1. Extract the session Youtube cookies from your browser as explained in <a href="./Youtube_Cookies.md">Youtube_Cookies.md</a>.
+2. Paste the full Netscape cookies content in the AWS secret.
+
+> [!NOTE]
+> Keep the cookies content exactly as exported (including header/comments and line breaks). Terraform does not manage this secret value either.

@@ -8,6 +8,16 @@ output "secret_name" {
     value       = aws_secretsmanager_secret.discord_bot_secret.name
 }
 
+output "youtube_cookies_secret_arn" {
+    description = "Unique ID of the created YouTube cookies secret"
+    value       = aws_secretsmanager_secret.youtube_cookies_secret.arn
+}
+
+output "youtube_cookies_secret_name" {
+    description = "Name of the created YouTube cookies secret"
+    value       = aws_secretsmanager_secret.youtube_cookies_secret.name
+}
+
 output "secret_reader_iam_user_name" {
     description = "IAM user restricted to reading the bot secret"
     value       = var.create_secret_reader_user ? aws_iam_user.secret_reader[0].name : null

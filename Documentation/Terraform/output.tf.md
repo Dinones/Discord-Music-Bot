@@ -34,9 +34,39 @@ output "secret_name" {
 
 <br>
 
+## 🧩⠀output "youtube_cookies_secret_arn" { ... }
+
+This output exposes the ARN of the YouTube cookies secret.
+
+```terraform
+output "youtube_cookies_secret_arn" {
+    description = "Unique ID of the created YouTube cookies secret"
+    value       = aws_secretsmanager_secret.youtube_cookies_secret.arn
+}
+```
+
+- `value`: This returns the ARN of the YouTube cookies secret resource created in `main.tf`.
+
+<br>
+
+## 🧩⠀output "youtube_cookies_secret_name" { ... }
+
+This output exposes the name of the YouTube cookies secret.
+
+```terraform
+output "youtube_cookies_secret_name" {
+    description = "Name of the created YouTube cookies secret"
+    value       = aws_secretsmanager_secret.youtube_cookies_secret.name
+}
+```
+
+- `value`: This returns the human-readable secret name, such as `discord_music_bot_youtube_cookies`.
+
+<br>
+
 ## 🧩⠀output "secret_reader_iam_user_name" { ... }
 
-This output shows the name of the restricted IAM user, if that user is enabled.
+This output shows the name of the restricted IAM user (bot/cookies read-only), if that user is enabled.
 
 ```terraform
 output "secret_reader_iam_user_name" {

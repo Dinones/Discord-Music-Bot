@@ -57,7 +57,7 @@ ERROR = f'\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[X] {RESET_FORMAT}'
 
 G_COULD_NOT_GET_AWS_SECRETS = \
     f'{ERROR}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{module}] "}{RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mCould not get AWS secrets. Error: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mCould not get AWS secrets: {RESET_FORMAT}'+\
     f'\033[{COLORS["Red"]}m{"{error}"} {RESET_FORMAT}'
 
 G_BOT_INITIALIZED = \
@@ -216,3 +216,26 @@ LOG_CREATED = \
     f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Logs] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mA new log has been generated: {RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]}m{"{log_path}"}{RESET_FORMAT}'
+
+###########################################################################################################################
+#####################################################     COOKIES     #####################################################
+###########################################################################################################################
+
+CK_COULD_NOT_GET_YT_COOKIES = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Cookies] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mCould not retrieve cookies from AWS: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]}m{"{error}"}{RESET_FORMAT}'
+
+CK_YT_COOKIES_EMPTY = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Cookies] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mYoutube cookies retrieved from AWS are empty{RESET_FORMAT}'
+
+CK_RETRIEVING_YT_COOKIES_FROM_AWS = \
+    f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Cookies] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mCould not find local Youtube cookies file: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]}mTrying to retrieve them from AWS{RESET_FORMAT}'
+
+CK_RETRIEVED_YT_COOKIES_FROM_AWS = \
+    f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Cookies] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mSuccessfully retrieved Youtube cookies from AWS: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]}m{"{path}"}{RESET_FORMAT}'

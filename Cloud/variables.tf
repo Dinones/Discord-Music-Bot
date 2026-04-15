@@ -16,6 +16,12 @@ variable "secret_name" {
     default     = "discord_music_bot_secrets"
 }
 
+variable "youtube_cookies_secret_name" {
+    type        = string
+    description = "Name of the Secrets Manager secret that stores YouTube cookies"
+    default     = "discord_music_bot_youtube_cookies"
+}
+
 variable "create_secret_reader_user" {
     type        = bool
     description = "Whether Terraform should create an IAM user limited to reading the bot secret"

@@ -43,6 +43,20 @@ variable "secret_name" {
 
 <br>
 
+## 🧩⠀youtube_cookies_secret_name
+
+This variable sets the name of the Secrets Manager secret used for YouTube cookies.
+
+```terraform
+variable "youtube_cookies_secret_name" {
+    type        = string
+    description = "Name of the Secrets Manager secret that stores YouTube cookies"
+    default     = "discord_music_bot_youtube_cookies"
+}
+```
+
+<br>
+
 ## 🧩⠀create_secret_reader_user
 
 This variable controls whether Terraform should create the restricted IAM user. If set to `false`, Terraform will skip the IAM user and anything that depends on it.
@@ -59,7 +73,7 @@ variable "create_secret_reader_user" {
 
 ## 🧩⠀secret_reader_user_name
 
-This variable defines the username for the restricted IAM user.
+This variable defines the username for the restricted IAM user that reads both bot and cookies secrets.
 
 ```terraform
 variable "secret_reader_user_name" {

@@ -27,6 +27,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Utils import Constants as CONST
 from Utils import Colored_Strings as STR
 from Utils.Logs import save_exception_to_txt
+from Utils.AWS_Youtube_Cookies import get_youtube_cookies
 
 # Import types
 if TYPE_CHECKING:
@@ -38,7 +39,6 @@ if TYPE_CHECKING:
 ###########################################################################################################################
 
 MODULE_NAME = 'Youtube'
-
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -110,6 +110,11 @@ def configure_ytdl(Music_Manager: Music_Manager) -> None:
 
     YOUTUBE_COOKIES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", CONST.YT_COOKIES_FILE_PATH))
 
+    # If local cookies are missing, try to fetch them from AWS Secrets Manager
+    if not os.path.exists(YOUTUBE_COOKIES_PATH):
+        print(STR.CK_RETRIEVING_YT_COOKIES_FROM_AWS)
+        get_youtube_cookies()
+
     # Bypass bot detection and allow access to age-restricted videos
     if os.path.exists(YOUTUBE_COOKIES_PATH):
         Music_Manager.ytdl_options.update(
@@ -120,7 +125,7 @@ def configure_ytdl(Music_Manager: Music_Manager) -> None:
     else:
         print(
             STR.YT_COOKIES_FILE_NOT_FOUND.format(
-                path = YOUTUBE_COOKIES_PATH
+                path = Path(YOUTUBE_COOKIES_PATH).resolve().as_uri()
             )
         )
 
