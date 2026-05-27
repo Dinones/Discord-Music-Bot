@@ -39,16 +39,15 @@ class Test_Configure_YTDL(unittest.IsolatedAsyncioTestCase):
         Test that configure_ytdl() sets the expected yt-dlp options.
         """
 
-        # Force os.path.exists() to return always False and disable the print() function  
         with (
             patch("Utils.Youtube.os.path.exists", return_value = False),
+            patch("Utils.Youtube.get_youtube_cookies"),
             patch("Utils.Youtube.print")
         ):
             Utils.Youtube.configure_ytdl(self._music_manager)
 
         keys = set(self._music_manager.ytdl_options)
 
-        # Check all options are initialized
         for option in (
             "format", "default_search", "skip_download", "noprogress", "noplaylist", "writedescription", "quiet",
             "verbose", "no_warnings", "logger", "postprocessors"
@@ -56,7 +55,9 @@ class Test_Configure_YTDL(unittest.IsolatedAsyncioTestCase):
             self.assertIn(
                 option,
                 keys,
-                _color_error_message_in_red(f'Option "{option}" not found after initializing ytdl_options.')
+                _color_error_message_in_red(
+                    f'Option "{option}" not found after initializing ytdl_options.'
+                )
             )
 
     #######################################################################################################################
@@ -72,11 +73,9 @@ class Test_Configure_YTDL(unittest.IsolatedAsyncioTestCase):
             os.path.join(os.path.dirname(Utils.Youtube.__file__), "..", CONST.YT_COOKIES_FILE_PATH)
         )
 
-        # Force os.path.exists() to return always True
         with patch("Utils.Youtube.os.path.exists", return_value = True):
             Utils.Youtube.configure_ytdl(self._music_manager)
 
-        # Check the "cookiefile" option has been added to ytdl_options
         self.assertEqual(
             self._music_manager.ytdl_options.get("cookiefile"),
             expected_cookie_path,
@@ -94,14 +93,13 @@ class Test_Configure_YTDL(unittest.IsolatedAsyncioTestCase):
         Test that configure_ytdl() prints a warning when cookies file is missing.
         """
 
-        # Force os.path.exists() to return always False and redirect the print() function to mock_print() to store data  
         with (
             patch("Utils.Youtube.os.path.exists", return_value = False),
+            patch("Utils.Youtube.get_youtube_cookies"),
             patch("Utils.Youtube.print") as mock_print
         ):
             Utils.Youtube.configure_ytdl(self._music_manager)
 
-        # Check the "cookiefile" option has not been added to ytdl_options
         self.assertNotIn(
             "cookiefile",
             self._music_manager.ytdl_options,
@@ -110,11 +108,40 @@ class Test_Configure_YTDL(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Check the warning logging message is printed in terminal
         self.assertEqual(
             mock_print.call_count,
-            1,
-            _color_error_message_in_red(f'Exactly ONE warning logging message should have been printed in terminal.')
+            2,
+            _color_error_message_in_red(
+                f'Exactly TWO warning logging messages should have been printed in terminal.'
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    def test_configure_ytdl_adds_available_js_runtime(self) -> None:
+
+        """
+        Test that configure_ytdl() adds an installed JavaScript runtime for yt-dlp challenge solving.
+        """
+
+        def mock_which(binary: str) -> str:
+            return f"/usr/bin/{binary}" if binary == "node" else None
+
+        with (
+            patch("Utils.Youtube.os.path.exists", return_value = False),
+            patch("Utils.Youtube.shutil.which", side_effect = mock_which),
+            patch("Utils.Youtube.get_youtube_cookies"),
+            patch("Utils.Youtube.print")
+        ):
+            Utils.Youtube.configure_ytdl(self._music_manager)
+
+        self.assertEqual(
+            self._music_manager.ytdl_options.get("js_runtimes"),
+            {"node": {}},
+            _color_error_message_in_red(
+                f'The "node" JavaScript runtime should have been added to ytdl_options when available.'
+            )
         )
 
 ###########################################################################################################################

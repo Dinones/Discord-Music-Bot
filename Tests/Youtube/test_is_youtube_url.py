@@ -38,7 +38,9 @@ class Test_Is_Youtube_URL(unittest.TestCase):
         ):
             self.assertTrue(
                 Utils.Youtube._is_youtube_url(url),
-                _color_error_message_in_red(f'The valid "{url}" URL has been flagged as invalid.')
+                _color_error_message_in_red(
+                    f'The valid "{url}" URL has been flagged as invalid.'
+                )
             )
 
     #######################################################################################################################
@@ -59,7 +61,9 @@ class Test_Is_Youtube_URL(unittest.TestCase):
         ):
             self.assertFalse(
                 Utils.Youtube._is_youtube_url(url),
-                _color_error_message_in_red(f'The invalid "{url}" URL was flagged as valid.')
+                _color_error_message_in_red(
+                    f'The invalid "{url}" URL was flagged as valid.'
+                )
             )
 
 ###########################################################################################################################

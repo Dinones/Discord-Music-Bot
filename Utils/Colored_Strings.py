@@ -57,13 +57,21 @@ ERROR = f'\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[X] {RESET_FORMAT}'
 
 G_COULD_NOT_GET_AWS_SECRETS = \
     f'{ERROR}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{module}] "}{RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mCould not get AWS secrets. Error: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]}m{"{error}"} {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mA log has been generated: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]}m{"{log_path}"}{RESET_FORMAT}'
+    f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mCould not get AWS secrets: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Red"]}m{"{error}"} {RESET_FORMAT}'
 
 G_BOT_INITIALIZED = \
-    f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Green"]}mBot initialized successfully!{RESET_FORMAT}'
+    f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Main] "}{RESET_FORMAT}'+\
+    f'\033[{SPECIAL["Bold"]};{COLORS["Green"]}mBot initialized successfully{RESET_FORMAT}'
+
+G_COULD_NOT_INITIALIZE_BOT = \
+    f'{ERROR}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Main] "}{RESET_FORMAT}'+\
+    f'\033[{SPECIAL["Bold"]};{COLORS["Red"]}mCould not initialize bot: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Red"]}m{"{reason}"}{RESET_FORMAT}'
+
+G_BOT_CONNECTED_AS = f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Main] "}{RESET_FORMAT}'+\
+    f'\033[{SPECIAL["Bold"]};{COLORS["Blue"]}mBot connected as: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]}m{"{bot_user}"} (id: {"{bot_id}"}){RESET_FORMAT}'
 
 G_ACTION_DONE = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
@@ -72,12 +80,12 @@ G_ACTION_DONE = \
 
 G_ACTION_NOT_DONE = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
-    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mTried to {"{action}"}: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mTried to {"{action}"}: {RESET_FORMAT}'+\
     f'\033[{COLORS["Yellow"]}m{"{reason}"}{RESET_FORMAT}'
 
 G_UNKNOWN_COMMAND_USED = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
-    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mTried to use a command that does not exist: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mTried to use a command that does not exist: {RESET_FORMAT}'+\
     f'\033[{COLORS["Yellow"]}m{"{command}"}{RESET_FORMAT}'
 
 G_INVALID_PATH_ERROR = \
@@ -159,7 +167,9 @@ YT_COOKIES_FILE_NOT_FOUND = \
 
 YT_AUDIO_DOWNLOADED = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[Youtube] {RESET_FORMAT}'+\
-    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mFile downloaded: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mFile downloaded {RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]}m({"{seconds}"}s){RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}m: {RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]}m{"{output_path}"}{RESET_FORMAT}'
 
 YT_VIDEO_FOUND = \
@@ -176,7 +186,7 @@ YT_INVALID_YOUTUBE_INPUT = \
 
 YT_COULD_NOT_UPDATE_SPOTIFY_SONG = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[Youtube] {RESET_FORMAT}'+\
-    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mCould not update a Spotify with Youtube info: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mCould not update a Spotify song with Youtube info: {RESET_FORMAT}'+\
     f'\033[{COLORS["Yellow"]}m{"{reason}"}{RESET_FORMAT}'
 
 ###########################################################################################################################
@@ -194,6 +204,12 @@ SP_SONGS_FOUND = \
     f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}msong(s) {RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]}m({"{seconds}"}s){RESET_FORMAT}'
 
+SP_ASK_TO_PRINT_FIRST_SONG = \
+    f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Spotify] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mDo you want to print the first song data? {RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]}m[Y/n]{RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}m: {RESET_FORMAT}'
+
 ###########################################################################################################################
 ##################################################     EVENT HANDLER     ##################################################
 ###########################################################################################################################
@@ -207,3 +223,45 @@ EH_COMMAND_LOADED = \
 EH_STT_TRANSCRIPTION = \
     f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Blue"]}mTranscription: {RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]}m{"{transcription}"}{RESET_FORMAT}'
+
+###########################################################################################################################
+######################################################     LOGS     #######################################################
+###########################################################################################################################
+
+LOG_CREATED = \
+    f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Logs] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mA new log has been generated: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]}m{"{log_path}"}{RESET_FORMAT}'
+
+###########################################################################################################################
+#####################################################     SECRETS     #####################################################
+###########################################################################################################################
+
+SC_ASK_TO_PRINT_SECRETS = \
+    f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mDo you want to print the retrieved secrets? {RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]}m[Y/n]{RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}m: {RESET_FORMAT}'
+
+SC_RETRIEVED_SECRETS_FROM_AWS = \
+    f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mSuccessfully retrieved bot secrets from AWS{RESET_FORMAT}'
+
+SC_COULD_NOT_GET_YT_COOKIES = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mCould not retrieve cookies from AWS: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]}m{"{error}"}{RESET_FORMAT}'
+
+SC_YT_COOKIES_EMPTY = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mYoutube cookies retrieved from AWS are empty{RESET_FORMAT}'
+
+SC_RETRIEVING_YT_COOKIES_FROM_AWS = \
+    f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mCould not find local Youtube cookies file: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]}mTrying to retrieve them from AWS{RESET_FORMAT}'
+
+SC_RETRIEVED_YT_COOKIES_FROM_AWS = \
+    f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mSuccessfully retrieved Youtube cookies from AWS: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]}m{"{path}"}{RESET_FORMAT}'

@@ -43,7 +43,6 @@ class Test_Get_YTDL_Options(unittest.IsolatedAsyncioTestCase):
             skip_download  = False
         )
 
-        # Check the returned default_search value is "ytsearch2"
         self.assertEqual(
             options.get("default_search"),
             "ytsearch2",
@@ -53,7 +52,6 @@ class Test_Get_YTDL_Options(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Check the returned default_search value is "ytsearch2"
         self.assertFalse(
             options.get("skip_download"),
             _color_error_message_in_red(
@@ -62,7 +60,6 @@ class Test_Get_YTDL_Options(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Check the original values of ytdl_options are not edited
         self.assertEqual(
             self._music_manager.ytdl_options.get("default_search"),
             "auto",
@@ -95,7 +92,6 @@ class Test_Get_YTDL_Options(unittest.IsolatedAsyncioTestCase):
         options = Utils.Youtube._get_ytdl_options(self._music_manager)
         options["postprocessors"][0]["preferredcodec"] = "wav"
 
-        # Check that original ytdl_options do not change after editing the original ones (deep-copies) 
         self.assertEqual(
             self._music_manager.ytdl_options["postprocessors"][0]["preferredcodec"],
             "mp3",

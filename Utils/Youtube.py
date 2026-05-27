@@ -10,8 +10,10 @@ from __future__ import annotations
 
 import os
 import sys
+import shutil
 import discord
 import asyncio
+from pathlib import Path
 from copy import deepcopy
 from yt_dlp import YoutubeDL
 from urllib.parse import urlparse
@@ -26,11 +28,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # from Utils import Messages as MSG
 from Utils import Constants as CONST
 from Utils import Colored_Strings as STR
+from Utils.Logs import save_exception_to_txt
+from Utils.AWS_Secrets import get_youtube_cookies
 
-# Import types
 if TYPE_CHECKING:
-    from Utils.Music_Manager import Music_Manager
     from discord import Message
+    from Utils.Music_Manager import Music_Manager
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
@@ -106,7 +109,18 @@ def configure_ytdl(Music_Manager: Music_Manager) -> None:
         }]
     }
 
+    # YouTube may require yt-dlp to run player JavaScript before real audio formats are exposed. Codespaces has Node
+    # installed, but yt-dlp only uses it when it is explicitly enabled
+    js_runtimes = _get_available_js_runtimes()
+    if js_runtimes:
+        Music_Manager.ytdl_options['js_runtimes'] = js_runtimes
+
     YOUTUBE_COOKIES_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", CONST.YT_COOKIES_FILE_PATH))
+
+    # If local cookies are missing, try to fetch them from AWS Secrets Manager
+    if not os.path.exists(YOUTUBE_COOKIES_PATH):
+        print(STR.SC_RETRIEVING_YT_COOKIES_FROM_AWS)
+        get_youtube_cookies()
 
     # Bypass bot detection and allow access to age-restricted videos
     if os.path.exists(YOUTUBE_COOKIES_PATH):
@@ -118,7 +132,7 @@ def configure_ytdl(Music_Manager: Music_Manager) -> None:
     else:
         print(
             STR.YT_COOKIES_FILE_NOT_FOUND.format(
-                path = YOUTUBE_COOKIES_PATH
+                path = Path(YOUTUBE_COOKIES_PATH).resolve().as_uri()
             )
         )
 
@@ -151,25 +165,32 @@ async def search_youtube_video(
     # If the input is a Youtube link, search it; if not, search the first 2 query results
     if _is_youtube_url(args):
         ytdl_options = _get_ytdl_options(Music_Manager, default_search = 'auto')
+        extract_function = _extract_info
     else:
+        # Lightweight search first to obtain result metadata, then fully extract only the shortest video data
         ytdl_options = _get_ytdl_options(Music_Manager, default_search = 'ytsearch2')
         args = f'{args} lyrics'
+        extract_function = _extract_query_search_result
 
     try:
-        response = await asyncio.to_thread(_extract_info, ytdl_options, args, False)
+        response = await asyncio.to_thread(extract_function, ytdl_options, args, False)
 
         # The search was successful, but could not find any result
         if not response.get('entries', {}) and not response.get('title', ''):
             return None
+ 
+    # This specific error will raise when no valid Youtube cookies are provided
     except DownloadError as error:
         print(
             STR.YT_INVALID_YOUTUBE_INPUT.format(
                 user   = message.author.name.capitalize(),
                 action = 'play something from Youtube',
-                reason = f'Invalid Youtube input "{args}" ({error})'
+                reason = f'Could not find "{args}" ({error}).'
             )
         )
+        log_path = save_exception_to_txt(error = error, title = 'Youtube_Search')
         return None
+
     except Exception as error:
         print(
             STR.YT_INVALID_YOUTUBE_INPUT.format(
@@ -177,6 +198,7 @@ async def search_youtube_video(
                 reason = f'Unexpected error searching "{args}" ({error})'
             )
         )
+        log_path = save_exception_to_txt(error = error, title = 'Youtube_Search')
         # await message.channel.send(MSG.DC_INVALID_LINK.replace('{platform}', 'Youtube'))
         return None
 
@@ -221,14 +243,18 @@ def get_video_from_spotify_song(
             # The search was successful, but could not find any result
             if not response.get('entries', {}) and not response.get('title', ''):
                 return None
+
         except DownloadError as error:
+            log_path = save_exception_to_txt(error = error, title = 'Youtube_Spotify_Search')
             print(
                 STR.YT_COULD_NOT_UPDATE_SPOTIFY_SONG.format(
-                    reason = f'Invalid Youtube input "{song_title}" ({error})'
+                    reason = f'Invalid Youtube input "{song_title}" ({error}).'
                 )
             )
             return None
+
         except Exception as error:
+            log_path = save_exception_to_txt(error = error, title = 'Youtube_Spotify_Search')
             print(
                 STR.YT_COULD_NOT_UPDATE_SPOTIFY_SONG.format(
                     reason = f'Unexpected error searching "{song_title}" ({error})'
@@ -246,24 +272,29 @@ def get_video_from_spotify_song(
 ###########################################################################################################################
 ###########################################################################################################################
 
-def get_audio_player(raw_audio_url: str) -> Optional[PCMVolumeTransformer]:
+def get_audio_player(raw_audio_url: str, start_offset: int = 0) -> Optional[PCMVolumeTransformer]:
 
     """
     Creates an audio player using FFmpeg for the given raw audio URL.
 
     Args:
         raw_audio_url (str): The raw audio URL.
+        start_offset  (int): Seconds into the stream where playback should begin. Defaults to 0.
 
     Returns:
         Optional[PCMVolumeTransformer]: The created audio player if successful, otherwise None in case of an error.
     """
 
     try:
+        # Prepend -ss so FFmpeg seeks before opening the stream, avoiding buffering the skipped portion
+        seek_prefix    = f"-ss {start_offset} " if start_offset > 0 else ""
+        before_options = f"{seek_prefix}-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+
         # Create an FFmpeg-based audio player
         player = PCMVolumeTransformer(
             FFmpegPCMAudio(
                 raw_audio_url,
-                before_options = "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
+                before_options = before_options,
                 options        = "-vn"
             )
         )
@@ -271,13 +302,13 @@ def get_audio_player(raw_audio_url: str) -> Optional[PCMVolumeTransformer]:
         return player
 
     except Exception as error:
+        log_path = save_exception_to_txt(error = error, title = 'Youtube_Player')
         print(
             STR.G_SONG_PLAYER_ERROR.format(
                 module = MODULE_NAME,
                 error  = error
             )
         )
-        
         return None
 
 ###########################################################################################################################
@@ -314,23 +345,27 @@ async def download_mp3(
 
     except DownloadError as error:
         video_info = {}
+        log_path = save_exception_to_txt(error = error, title = 'Youtube_Download')
         print(
             STR.YT_INVALID_YOUTUBE_INPUT.format(
                 user   = message.author.name.capitalize(),
-                reason = f'Invalid Youtube input "{youtube_url}" ({error})'
+                reason = f'Invalid Youtube input "{youtube_url}" ({error}).'
             )
         )
 
     except Exception as error:
         video_info = {}
+        log_path = save_exception_to_txt(error = error, title = 'Youtube_Download')
         print(
             STR.YT_INVALID_YOUTUBE_INPUT.format(
                 user   = message.author.name.capitalize(),
-                reason = f'Unexpected error searching "{youtube_url}" ({error})'
+                reason = f'Unexpected error searching "{youtube_url}" ({error}).'
             )
         )
 
-    return f"{video_info.get('title', '')}.mp3" if video_info else None
+    abs_path = Path(f"{os.path.join(output_path, video_info.get('title', ''))}.mp3").resolve().as_uri()
+
+    return abs_path if video_info else None
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -352,6 +387,28 @@ def _get_ytdl_options(Music_Manager: Music_Manager, **overrides: Any) -> Dict[st
     options.update(overrides)
 
     return options
+
+###########################################################################################################################
+###########################################################################################################################
+
+def _get_available_js_runtimes() -> Dict[str, Dict[str, Any]]:
+
+    """
+    Return installed JavaScript runtimes that yt-dlp can use for YouTube challenge solving.
+
+    Returns:
+        Dict[str, Dict[str, Any]]: yt-dlp JavaScript runtime configuration.
+    """
+
+    js_runtimes: Dict[str, Dict[str, Any]] = {}
+
+    # yt-dlp expects the Python API shape {"runtime": {config}}
+    # If none are installed, leave yt-dlp's default behavior untouched
+    for runtime in ('deno', 'node', 'quickjs', 'bun'):
+        if shutil.which(runtime):
+            js_runtimes[runtime] = {}
+
+    return js_runtimes
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -395,6 +452,53 @@ def _extract_info(ytdl_options: Dict[str, Any], query: str, download: bool) -> D
 
     with YoutubeDL(ytdl_options) as ytdl:
         return ytdl.extract_info(query, download = download)
+
+###########################################################################################################################
+###########################################################################################################################
+
+def _extract_query_search_result(ytdl_options: Dict[str, Any], query: str, download: bool) -> Dict[str, Any]:
+
+    """
+    Extract the shortest result from a YouTube text search without fully processing every search entry.
+
+    Args:
+        ytdl_options (Dict[str, Any]): Options for this yt-dlp operation.
+        query (str): YouTube search query.
+        download (bool): Whether yt-dlp should download media.
+
+    Returns:
+        Dict[str, Any]: Extraction result payload from yt-dlp.
+    """
+
+    # Flat extraction avoids downloading/solving each result's playable stream URL during search
+    flat_options = deepcopy(ytdl_options)
+    flat_options['extract_flat'] = 'in_playlist'
+
+    flat_response = _extract_info(flat_options, query, False)
+    entries = flat_response.get('entries', {})
+
+    if not entries:
+        return flat_response
+
+    # Choose the shortest result from the first two YouTube matches
+    shortest_video = min(entries, key = lambda video: video.get('duration') or float('inf'))
+    video_url = (
+        shortest_video.get('webpage_url', '') or
+        shortest_video.get('url', '') or
+        shortest_video.get('id', '')
+    )
+
+    if not video_url:
+        return flat_response
+
+    if not _is_youtube_url(video_url):
+        video_url = f'https://www.youtube.com/watch?v={video_url}'
+
+    # The selected flat result must be fully extracted so Discord receives a playable audio URL
+    video_options = deepcopy(ytdl_options)
+    video_options['default_search'] = 'auto'
+
+    return _extract_info(video_options, video_url, download)
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################

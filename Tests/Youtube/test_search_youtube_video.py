@@ -47,11 +47,15 @@ class Test_Search_Youtube_Video(unittest.IsolatedAsyncioTestCase):
             ]
         }
 
-        # Force asyncio.to_thread() to return response
-        with patch("Utils.Youtube.asyncio.to_thread", new = AsyncMock(return_value = response)):
-            result = await Utils.Youtube.search_youtube_video(self._music_manager, self.message, CONST.TESTING_YOUTUBE_LINK)
+        with (
+            patch("Utils.Youtube.asyncio.to_thread", new = AsyncMock(return_value = response))
+        ):
+            result = await Utils.Youtube.search_youtube_video(
+                Music_Manager = self._music_manager,
+                message       = self.message,
+                args          = CONST.TESTING_YOUTUBE_LINK
+            )
 
-        # Check the result is not None
         self.assertIsNotNone(
             result,
             _color_error_message_in_red(
@@ -59,7 +63,6 @@ class Test_Search_Youtube_Video(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Check it returned the shortest result (name and duration)
         song_name = "Short"
         self.assertEqual(
             result.get("title"),
@@ -87,16 +90,24 @@ class Test_Search_Youtube_Video(unittest.IsolatedAsyncioTestCase):
         Test that search_youtube_video() appends 'lyrics' and uses ytsearch2 for text queries.
         """
 
-        response = {"entries": [{"title": "Result", "duration": 100}]}
+        response = {
+            "entries": [
+                {"title": "Result", "duration": 100}
+            ]
+        }
 
-        # Force asyncio.to_thread() to return response
-        with patch("Utils.Youtube.asyncio.to_thread", new = AsyncMock(return_value = response)) as mock_to_thread:
-            await Utils.Youtube.search_youtube_video(self._music_manager, self.message, CONST.TESTING_YOUTUBE_QUERY)
+        with (
+            patch("Utils.Youtube.asyncio.to_thread", new = AsyncMock(return_value = response)) as mock_to_thread
+        ):
+            await Utils.Youtube.search_youtube_video(
+                Music_Manager = self._music_manager,
+                message       = self.message,
+                args          = CONST.TESTING_YOUTUBE_QUERY
+            )
 
         args = mock_to_thread.await_args.args
         ytdl_options = args[1]
 
-        # Check the default_search value is set to "ytsearch2"
         self.assertEqual(
             ytdl_options.get("default_search"),
             "ytsearch2",
@@ -106,7 +117,6 @@ class Test_Search_Youtube_Video(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Check the song query is the expected one with the word "lyrics" added at the end
         query = f"{CONST.TESTING_YOUTUBE_QUERY} lyrics"
         self.assertEqual(
             args[2],
@@ -117,7 +127,6 @@ class Test_Search_Youtube_Video(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Check the download option is set to False
         self.assertFalse(
             args[3],
             _color_error_message_in_red(
@@ -135,11 +144,15 @@ class Test_Search_Youtube_Video(unittest.IsolatedAsyncioTestCase):
         Test that search_youtube_video() returns None for blank input.
         """
 
-        # Force asyncio.to_thread() to return an AsyncMock object
-        with patch("Utils.Youtube.asyncio.to_thread", new = AsyncMock()):
-            result = await Utils.Youtube.search_youtube_video(self._music_manager, self.message, "   ")
+        with (
+            patch("Utils.Youtube.asyncio.to_thread", new = AsyncMock())
+        ):
+            result = await Utils.Youtube.search_youtube_video(
+                Music_Manager = self._music_manager,
+                message       = self.message,
+                args          = "   "
+            )
 
-        # Check None is returned when no results are found in the Youtube search
         self.assertIsNone(
             result,
             _color_error_message_in_red(
@@ -157,11 +170,15 @@ class Test_Search_Youtube_Video(unittest.IsolatedAsyncioTestCase):
         Test that search_youtube_video() returns None when extractor response has no entries and no title.
         """
 
-        # Force asyncio.to_thread() to return {}
-        with patch("Utils.Youtube.asyncio.to_thread", new = AsyncMock(return_value = {})):
-            result = await Utils.Youtube.search_youtube_video(self._music_manager, self.message, CONST.TESTING_YOUTUBE_QUERY)
+        with (
+            patch("Utils.Youtube.asyncio.to_thread", new = AsyncMock(return_value = {}))
+        ):
+            result = await Utils.Youtube.search_youtube_video(
+                Music_Manager = self._music_manager,
+                message       = self.message,
+                args          = CONST.TESTING_YOUTUBE_QUERY
+            )
 
-        # Check None is returned when no results are found in the Youtube search
         self.assertIsNone(
             result,
             _color_error_message_in_red(
@@ -181,16 +198,95 @@ class Test_Search_Youtube_Video(unittest.IsolatedAsyncioTestCase):
 
         error = "An error occurred when trying to donwload the video from Youtube"
 
-        # Force asyncio.to_thread() to raise a DownloadError
-        with patch("Utils.Youtube.asyncio.to_thread", new = AsyncMock(side_effect = Utils.Youtube.DownloadError(error))):
-            result = await Utils.Youtube.search_youtube_video(self._music_manager, self.message, CONST.TESTING_YOUTUBE_QUERY)
+        with (
+            patch("Utils.Youtube.asyncio.to_thread", new = AsyncMock(side_effect = Utils.Youtube.DownloadError(error))),
+            patch("Utils.Youtube.save_exception_to_txt") as mock_save_exception
+        ):
+            result = await Utils.Youtube.search_youtube_video(
+                Music_Manager = self._music_manager,
+                message       = self.message,
+                args          = CONST.TESTING_YOUTUBE_QUERY
+            )
 
-        # Check None is returned when an error is raised
         self.assertIsNone(
             result,
             _color_error_message_in_red(
                 f'The "search_youtube_video()" function should have returned "None" ' +
                 f'instead of "{result}" when no results are found in the Youtube search.'
+            )
+        )
+
+        self.assertEqual(
+            mock_save_exception.call_count,
+            1,
+            _color_error_message_in_red(
+                f'The "save_exception_to_txt()" function should have been called exactly "1" time(s) instead of ' +
+                f'"{mock_save_exception.call_count}".'
+
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    def test_extract_query_search_result_fully_extracts_shortest_flat_entry(self) -> None:
+
+        """
+        Test that _extract_query_search_result() fully extracts only the shortest flat search entry.
+        """
+
+        ytdl_options = {"default_search": "ytsearch2"}
+
+        flat_response = {
+            "entries": [
+                {"id": "long-video", "duration": 300},
+                {"id": "short-video", "duration": 120}
+            ]
+        }
+
+        full_response = {"id": "short-video", "title": "Short"}
+
+        with (
+            patch("Utils.Youtube._extract_info", side_effect = [flat_response, full_response]) as mock_extract
+        ):
+            result = Utils.Youtube._extract_query_search_result(
+                ytdl_options = ytdl_options,
+                query        = "song lyrics",
+                download     = False
+            )
+
+        self.assertEqual(
+            result,
+            full_response,
+            _color_error_message_in_red(
+                f'The "_extract_query_search_result()" function should return the fully extracted shortest result.'
+            )
+        )
+
+        first_options = mock_extract.call_args_list[0].args[0]
+        second_options = mock_extract.call_args_list[1].args[0]
+
+        self.assertEqual(
+            first_options.get("extract_flat"),
+            "in_playlist",
+            _color_error_message_in_red(
+                f'The first extraction should use "extract_flat" to avoid fully extracting every search result.'
+            )
+        )
+
+        self.assertEqual(
+            second_options.get("default_search"),
+            "auto",
+            _color_error_message_in_red(
+                f'The selected video extraction should use "auto" search mode.'
+            )
+        )
+
+        self.assertEqual(
+            mock_extract.call_args_list[1].args[1],
+            "https://www.youtube.com/watch?v=short-video",
+            _color_error_message_in_red(
+                f'The selected video URL should be built from the shortest flat entry id.'
             )
         )
 

@@ -1,15 +1,35 @@
 ###########################################################################################################################
+#####################################################     DISCORD     #####################################################
+###########################################################################################################################
+
+BOT_PREFIX = '!'
+EMBED_DISC_GIF_PATH = 'Media/Others/Spinning_Disc.gif'
+# Options: "Playing", "Watching", "Streaming", "Listening", "Competing"
+BOT_ACTIVITY_TYPE = 'Listening'
+# Options: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL" or empty string to disable all
+LOGGING_LEVEL = ''
+
+###########################################################################################################################
 #####################################################     SECRETS     #####################################################
 ###########################################################################################################################
 
 AWS_REGION  = "eu-west-1"
 SECRET_NAME = "discord_music_bot_secrets"
+YT_COOKIES_SECRET_NAME = 'discord_music_bot_youtube_cookies'
 
 ###########################################################################################################################
 #####################################################     YOUTUBE     #####################################################
 ###########################################################################################################################
 
 YT_COOKIES_FILE_PATH = 'Media/Others/Youtube_Cookies.txt'
+
+###########################################################################################################################
+#####################################################     SPOTIFY     #####################################################
+###########################################################################################################################
+
+SPOTIFY_DEFAULT_MARKET = "ES"
+SPOTIFY_REQUEST_TIMEOUT = 10
+SPOTIFY_TOKEN_EXPIRATION_BUFFER_SECONDS = 60
 
 ###########################################################################################################################
 ######################################################     TESTS     ######################################################
@@ -21,6 +41,6 @@ TESTING_YOUTUBE_LINK = 'https://www.youtube.com/watch?v=7dSMNXg-QEQ'
 TESTING_YOUTUBE_QUERY = 'La bbesita bb lean'
 TESTING_MP3_DOWNLOAD_OUTPUT_PATH = 'Media/Audios/'
 
-TESTING_SPOTIFY_SONG_LINK = 'https://open.spotify.com/track/5DoLhdU27owX1NMrKLUbUl?si=a3aee66406344cf7'
-TESTING_SPOTIFY_PLAYLIST_LINK = 'https://open.spotify.com/playlist/37i9dQZEVXbNFJfN1Vw8d9?si=2e2983d05c294c91'
-TESTING_SPOTIFY_ALBUM_LINK = 'https://open.spotify.com/album/3RQQmkQEvNCY4prGKE6oc5?si=8a7197a0378647b6'
+TESTING_SPOTIFY_SONG_LINK = 'https://open.spotify.com/track/5DoLhdU27owX1NMrKLUbUl'
+TESTING_SPOTIFY_PLAYLIST_LINK = 'https://open.spotify.com/playlist/0PenuWAdyz6JIT1nmEl77F'
+TESTING_SPOTIFY_ALBUM_LINK = 'https://open.spotify.com/album/3RQQmkQEvNCY4prGKE6oc5'

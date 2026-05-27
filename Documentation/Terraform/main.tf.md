@@ -61,6 +61,30 @@ resource "aws_secretsmanager_secret" "discord_bot_secret" {
 
 <br>
 
+## 🧩⠀resource "aws_secretsmanager_secret" "youtube_cookies_secret" { ... }
+
+This block creates a second AWS Secrets Manager secret used to store the YouTube cookies file.
+
+```terraform
+resource "aws_secretsmanager_secret" "youtube_cookies_secret" {
+    name                    = var.youtube_cookies_secret_name
+    description             = "Discord Music Bot YouTube Cookies"
+    recovery_window_in_days = 7
+
+    tags = {
+        Project = var.project_name
+        Managed = "Terraform"
+    }
+}
+```
+
+- `name`: This gives the YouTube cookies secret its name from `youtube_cookies_secret_name`.
+- `description`: Human-readable description shown in AWS.
+- `recovery_window_in_days`: Recovery window before permanent deletion.
+- `tags`: Same ownership/management tags as the other resources.
+
+<br>
+
 ## 🧩⠀data "aws_iam_policy_document" "secret_reader" { ... }
 
 This is a data block, not a real AWS resource. Its job is to build a JSON IAM policy document that can later be attached to an IAM user.
@@ -68,7 +92,7 @@ This is a data block, not a real AWS resource. Its job is to build a JSON IAM po
 ```terraform
 data "aws_iam_policy_document" "secret_reader" {
     statement {
-        sid    = "ReadOnlyBotSecret"
+        sid    = "ReadOnlyBotSecrets"
         effect = "Allow"
 
         actions = [
@@ -76,23 +100,25 @@ data "aws_iam_policy_document" "secret_reader" {
         ]
 
         resources = [
-            aws_secretsmanager_secret.discord_bot_secret.arn
+            aws_secretsmanager_secret.discord_bot_secret.arn,
+            aws_secretsmanager_secret.youtube_cookies_secret.arn
         ]
     }
 }
 ```
 
 - `statement`: An IAM policy is made of one or more statements.
-    - `sid = "ReadOnlyBotSecret"`: Statement ID to help identify this policy rule.
+    - `sid = "ReadOnlyBotSecrets"`: Statement ID to help identify this policy rule.
     - `effect = "Allow"`: This means the policy allows the action listed below.
     - `actions`: AWS actions that the IAM user is allowed to perform.
         - `"secretsmanager:GetSecretValue"`: It allows the user to read the content of a secret from AWS Secrets Manager.
     - `resources`: Resources the IAM user is able to perform the specified actions to.
-        - `aws_secretsmanager_secret.discord_bot_secret.arn`: This limits the permission to only one secret: the one created by this Terraform project.
+        - `aws_secretsmanager_secret.discord_bot_secret.arn`: Permission to read the bot JSON secret containing the tokens.
+        - `aws_secretsmanager_secret.youtube_cookies_secret.arn`: Permission to read the YouTube cookies secret.
 
 This is the most important least-privilege part of the design:
 
-- The user can read only this secret.
+- The user can read only these two secrets.
 - The user cannot read other secrets.
 - The user cannot manage other AWS resources.
 

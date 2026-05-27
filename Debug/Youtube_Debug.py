@@ -12,16 +12,13 @@ import os
 import sys
 import asyncio
 from time import time
-from typing import TYPE_CHECKING
-from unittest.mock import Mock, AsyncMock
 
+# Module may be executed for testing purposes and may require different import paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from Utils.Youtube import *
 from Utils.Music_Manager import Music_Manager
-
-if TYPE_CHECKING:
-    from discord import Message
+from Debug.Helpers.Mock_Message import build_test_message
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
@@ -35,7 +32,6 @@ MODULE_NAME = 'Youtube'
 # 1. Download MP3 from Youtube link
 def _download_mp3_from_link(option):
     print(
-        '\n' + 
         STR.M_SELECTED_OPTION.format(
             module = MODULE_NAME,
             option = option,
@@ -45,7 +41,7 @@ def _download_mp3_from_link(option):
     )
 
     _Music_Manager = Music_Manager()
-    message = _build_test_message()
+    message = build_test_message()
 
     MP3_DOWNLOAD_OUTPUT_PATH = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "..", CONST.TESTING_MP3_DOWNLOAD_OUTPUT_PATH)
@@ -59,11 +55,12 @@ def _download_mp3_from_link(option):
             )
         )
 
-    video_title = asyncio.run(
+    start_time = time()
+    output_video_path = asyncio.run(
         download_mp3(_Music_Manager, message, CONST.TESTING_YOUTUBE_LINK, MP3_DOWNLOAD_OUTPUT_PATH)
     )
 
-    if not video_title:
+    if not output_video_path:
         return print(
             STR.G_ACTION_NOT_DONE.format(
                 user   = message.author.name.capitalize(),
@@ -72,9 +69,12 @@ def _download_mp3_from_link(option):
             )
         )
 
-    output_video_path = os.path.join(MP3_DOWNLOAD_OUTPUT_PATH, video_title)
-
-    print(STR.YT_AUDIO_DOWNLOADED.format(output_path = output_video_path))
+    print(
+        STR.YT_AUDIO_DOWNLOADED.format(
+            seconds     = str(round(time() - start_time, 2)),
+            output_path = output_video_path
+        )
+    )
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -88,7 +88,6 @@ def _search_youtube_video(option):
         search_video = CONST.TESTING_YOUTUBE_QUERY
 
     print(
-        '\n' + 
         STR.M_SELECTED_OPTION.format(
             module = MODULE_NAME,
             option = option,
@@ -98,7 +97,7 @@ def _search_youtube_video(option):
     )
 
     _Music_Manager = Music_Manager()
-    message = _build_test_message()
+    message = build_test_message()
 
     start_time = time()
     result = asyncio.run(search_youtube_video(_Music_Manager, message, search_video))
@@ -120,22 +119,6 @@ def _search_youtube_video(option):
     )
 
 ###########################################################################################################################
-###########################################################################################################################
-
-def _build_test_message() -> Message:
-    
-    message = Mock(
-        author = Mock(),
-        channel = Mock(
-            send = AsyncMock()
-        )
-    )
-
-    message.author.name = CONST.TESTING_AUTHOR_NAME
-        
-    return message
-
-###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
 ###########################################################################################################################
 
@@ -154,6 +137,7 @@ def main_menu():
         }
 
         if option in menu_options:
+            print()
             menu_options[option](option)
             print()
         else:
