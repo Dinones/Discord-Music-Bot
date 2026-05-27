@@ -11,6 +11,7 @@ crash.log
 
 # OS / Editor
 .DS_Store
+.claude/
 .vscode/
 .idea/
 .venv
@@ -29,3 +30,9 @@ aws/
 
 # Credentials
 Youtube_Cookies.txt
+.env
+.env.*
+
+# Private
+Utils/Custom_Messages.py
+test.py

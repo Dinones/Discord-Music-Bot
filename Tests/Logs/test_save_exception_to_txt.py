@@ -13,7 +13,7 @@ from pathlib import Path
 from unittest.mock import patch
 from tempfile import TemporaryDirectory
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 import Utils.Logs
 
@@ -22,11 +22,12 @@ import Utils.Logs
 ###########################################################################################################################
 
 class TestSaveExceptionToTxt(unittest.TestCase):
+
     def test_creates_file_and_writes_traceback_and_returns_uri(self) -> None:
+
         with TemporaryDirectory() as tmpdir:
             fixed_timestamp = 1234567890
 
-            # Create a real exception with traceback
             try:
                 1 / 0
             except Exception as error:
@@ -36,14 +37,11 @@ class TestSaveExceptionToTxt(unittest.TestCase):
                 ):
                     uri = Utils.Logs.save_exception_to_txt(error, "division by zero")
 
-            # Assert: returns file URI
             self.assertTrue(uri.startswith("file:///"))
 
-            # Assert: expected filename (spaces -> underscore)
             expected_path = Path(tmpdir) / f"division_by_zero_{fixed_timestamp}.txt"
             self.assertTrue(expected_path.exists())
 
-            # Assert: file content includes traceback + exception details
             content = expected_path.read_text(encoding="utf-8")
             self.assertIn("Traceback (most recent call last)", content)
 
@@ -52,4 +50,4 @@ class TestSaveExceptionToTxt(unittest.TestCase):
 ###########################################################################################################################
 
 if __name__ == "__main__":
-    unittest.main(buffer=True)
+    unittest.main(buffer = True)

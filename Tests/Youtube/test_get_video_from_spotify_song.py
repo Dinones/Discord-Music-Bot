@@ -48,7 +48,6 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
         mock_ytdl_instance = Mock()
         mock_ytdl_instance.extract_info.return_value = response
 
-        # Force YoutubeDL() to return mock_ytdl_instance
         with patch("Utils.Youtube.YoutubeDL") as mock_youtubedl:
             mock_youtubedl.return_value.__enter__.return_value = mock_ytdl_instance
             result = Utils.Youtube.get_video_from_spotify_song(
@@ -57,7 +56,6 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
                 song_authors  = "Author"
             )
 
-        # Check the result is not None
         self.assertIsNotNone(
             result,
             _color_error_message_in_red(
@@ -65,7 +63,6 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Check it returned the shortest result (name and duration)
         song_name = "Short"
         self.assertEqual(
             result.get("title"),
@@ -84,11 +81,9 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Get the arguments passed to ytdl.extract_info(args)
         extract_args = mock_ytdl_instance.extract_info.call_args.args
         ytdl_options = mock_youtubedl.call_args.args[0]
 
-        # Check the song query is the expected one with the word "lyrics" added at the end
         query = "Title Author lyrics"
         self.assertEqual(
             extract_args[0],
@@ -99,7 +94,6 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Check the download option is set to False
         self.assertFalse(
             mock_ytdl_instance.extract_info.call_args.kwargs.get("download"),
             _color_error_message_in_red(
@@ -108,7 +102,6 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Check the default_search value is set to "ytsearch2"
         self.assertEqual(
             ytdl_options.get("default_search"),
             "ytsearch2",
@@ -132,7 +125,6 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
         mock_ytdl_instance = Mock()
         mock_ytdl_instance.extract_info.return_value = response
 
-        # Force YoutubeDL() to return mock_ytdl_instance
         with patch("Utils.Youtube.YoutubeDL") as mock_youtubedl:
             mock_youtubedl.return_value.__enter__.return_value = mock_ytdl_instance
             result = Utils.Youtube.get_video_from_spotify_song(
@@ -141,7 +133,6 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
                 song_authors  = "Author"
             )
 
-        # Check the result is not None if a single result is found in the Youtube search
         self.assertIsNotNone(
             result,
             _color_error_message_in_red(
@@ -150,7 +141,6 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
             )
         )
 
-        # Check it returned the shortest result (name and duration)
         title = "Single Result"
         self.assertEqual(
             result.get("title"),
@@ -181,7 +171,6 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
         mock_ytdl_instance = Mock()
         mock_ytdl_instance.extract_info.return_value = {}
 
-        # Force YoutubeDL() to return mock_ytdl_instance
         with patch("Utils.Youtube.YoutubeDL") as mock_youtubedl:
             mock_youtubedl.return_value.__enter__.return_value = mock_ytdl_instance
             result = Utils.Youtube.get_video_from_spotify_song(
@@ -190,7 +179,6 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
                 song_authors  = "Author"
             )
 
-        # Check None is returned when no results are found in the Youtube search
         self.assertIsNone(
             result,
             _color_error_message_in_red(
@@ -212,8 +200,10 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
         mock_ytdl_instance = Mock()
         mock_ytdl_instance.extract_info.side_effect = Utils.Youtube.DownloadError(error)
 
-        # Force YoutubeDL() to raise a DownloadError
-        with patch("Utils.Youtube.YoutubeDL") as mock_youtubedl:
+        with (
+            patch("Utils.Youtube.YoutubeDL") as mock_youtubedl,
+            patch("Utils.Youtube.save_exception_to_txt") as mock_save_exception
+        ):
             mock_youtubedl.return_value.__enter__.return_value = mock_ytdl_instance
             result = Utils.Youtube.get_video_from_spotify_song(
                 Music_Manager = self._music_manager,
@@ -221,12 +211,21 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
                 song_authors  = "Author"
             )
 
-        # Check the result is None
         self.assertIsNone(
             result,
             _color_error_message_in_red(
                 f'The "get_video_from_spotify_song()" function should return "None" instead of "{result}" when ' +
                 f'the download fails.'
+            )
+        )
+
+        self.assertEqual(
+            mock_save_exception.call_count,
+            1,
+            _color_error_message_in_red(
+                f'The "save_exception_to_txt()" function should have been called exactly "1" time(s) instead of ' +
+                f'"{mock_save_exception.call_count}".'
+
             )
         )
 
@@ -243,17 +242,26 @@ class Test_Get_Video_From_Spotify_Song(unittest.IsolatedAsyncioTestCase):
         mock_ytdl_instance = Mock()
         mock_ytdl_instance.extract_info.side_effect = Exception(error)
 
-        # Force YoutubeDL() to raise a DownloadError
-        with patch("Utils.Youtube.YoutubeDL") as mock_youtubedl:
+        with (
+            patch("Utils.Youtube.YoutubeDL") as mock_youtubedl,
+            patch("Utils.Youtube.save_exception_to_txt") as mock_save_exception
+        ):
             mock_youtubedl.return_value.__enter__.return_value = mock_ytdl_instance
             result = Utils.Youtube.get_video_from_spotify_song(self._music_manager, "Song", "Author")
 
-        # Check the result is None
         self.assertIsNone(
             result,
             _color_error_message_in_red(
                 f'The "get_video_from_spotify_song()" function should return "None" instead of "{result}" when ' +
                 f'an unexpected error occurs.'
+            )
+        )
+
+        self.assertEqual(
+            mock_save_exception.call_count,
+            1,
+            _color_error_message_in_red(
+                'get_video_from_spotify_song() should call save_exception_to_txt() exactly once on unexpected error.'
             )
         )
 

@@ -74,13 +74,13 @@ The Terraform in this project currently creates:
 
 Install **Terraform** and **AWS CLI**.
 
-### Windows environment
+### 🪟ㅤWindows Environment
 
 ```bash
 choco install terraform awscli -y
 ```
 
-### Ubuntu environment
+### 🐧ㅤUbuntu Environment
 
 ```bash
 sudo apt-get update
@@ -231,9 +231,12 @@ Set the JSON content with:
 {
     "DISCORD_MUSIC_BOT_TOKEN_PROD" : "",
     "DISCORD_MUSIC_BOT_TOKEN_DEV"  : "",
-    "BOT_ACTIVITY_NAME"            : "",
+
     "SPOTIFY_CLIENT_ID"            : "",
-    "SPOTIFY_CLIENT_SECRET"        : ""
+    "SPOTIFY_CLIENT_SECRET"        : "",
+
+    "BOT_ACTIVITY_NAME"            : "",
+    "DISCORD_SERVER_NAME"          : "",
 }
 ```
 

@@ -12,16 +12,13 @@ import os
 import sys
 import asyncio
 from time import time
-from typing import TYPE_CHECKING
-from unittest.mock import Mock, AsyncMock
 
+# Module may be executed for testing purposes and may require different import paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from Utils.Youtube import *
 from Utils.Music_Manager import Music_Manager
-
-if TYPE_CHECKING:
-    from discord import Message
+from Debug.Helpers.Mock_Message import build_test_message
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
@@ -44,7 +41,7 @@ def _download_mp3_from_link(option):
     )
 
     _Music_Manager = Music_Manager()
-    message = _build_test_message()
+    message = build_test_message()
 
     MP3_DOWNLOAD_OUTPUT_PATH = os.path.abspath(
         os.path.join(os.path.dirname(__file__), "..", CONST.TESTING_MP3_DOWNLOAD_OUTPUT_PATH)
@@ -100,7 +97,7 @@ def _search_youtube_video(option):
     )
 
     _Music_Manager = Music_Manager()
-    message = _build_test_message()
+    message = build_test_message()
 
     start_time = time()
     result = asyncio.run(search_youtube_video(_Music_Manager, message, search_video))
@@ -120,22 +117,6 @@ def _search_youtube_video(option):
             title   = result.get('title', '')
         )
     )
-
-###########################################################################################################################
-###########################################################################################################################
-
-def _build_test_message() -> Message:
-    
-    message = Mock(
-        author = Mock(),
-        channel = Mock(
-            send = AsyncMock()
-        )
-    )
-
-    message.author.name = CONST.TESTING_AUTHOR_NAME
-        
-    return message
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
