@@ -73,6 +73,12 @@ G_BOT_CONNECTED_AS = f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Main]
     f'\033[{SPECIAL["Bold"]};{COLORS["Blue"]}mBot connected as: {RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]}m{"{bot_user}"} (id: {"{bot_id}"}){RESET_FORMAT}'
 
+G_BOT_ENVIRONMENT = \
+    f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Main] "}{RESET_FORMAT}'+\
+    f'\033[{SPECIAL["Bold"]};{COLORS["Blue"]}mRunning in {RESET_FORMAT}'+\
+    f'\033[{COLORS["Blue"]}m{"{environment}"}{RESET_FORMAT}'+\
+    f'\033[{SPECIAL["Bold"]};{COLORS["Blue"]}m environment{RESET_FORMAT}'
+
 G_ACTION_DONE = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{user}] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Blue"]};{SPECIAL["Bold"]}mTried to {"{action}"}: {RESET_FORMAT}'+\

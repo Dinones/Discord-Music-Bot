@@ -8,12 +8,14 @@
 
 from __future__ import annotations
 
+import os
 import discord
 import inspect
 import pkgutil
 import Commands
 import importlib
 from typing import Dict, Any
+from dotenv import load_dotenv
 from discord.ext import commands
 from dataclasses import dataclass
 
@@ -32,7 +34,7 @@ except:
 ###########################################################################################################################
 
 MODULE_NAME = "Main"
-DISCORD_TOKEN_KEYS = ("DISCORD_MUSIC_BOT_TOKEN_PROD", "DISCORD_MUSIC_BOT_TOKEN_DEV")
+VALID_ENVIRONMENTS = ('prod', 'dev')
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -44,27 +46,58 @@ class Bot_Runtime_Config:
     Runtime configuration loaded from non-versioned sources (env vars / AWS Secrets).
     """
 
-    discord_server_name : str
-    activity : discord.Activity | None
+    env                  : str
+    discord_server_name  : str
+    activity             : discord.Activity | None
+    discord_text_channel : int | None
 
 ###########################################################################################################################
 ###########################################################################################################################
 
-def _get_discord_token(secrets: dict[str, Any]) -> str:
+def _resolve_environment() -> str:
 
     """
-    Retrieve the Discord bot token from environment variables or AWS Secrets.
+    Read the active environment from the BOT_ENV environment variable.
+
+    Args:
+        None
+
+    Returns:
+        str: 'prod' or 'dev'. Defaults to 'dev' if BOT_ENV is unset or invalid.
+    """
+
+    env_raw = os.environ.get('BOT_ENV', 'dev').strip().lower()
+    env = env_raw if env_raw in VALID_ENVIRONMENTS else 'dev'
+
+    if env != env_raw:
+        print(
+            STR.G_ACTION_NOT_DONE.format(
+                user   = MODULE_NAME,
+                action = 'read BOT_ENV',
+                reason = f'Unknown environment "{env_raw}", defaulting to "dev"'
+            )
+        )
+
+    return env
+
+###########################################################################################################################
+###########################################################################################################################
+
+def _get_discord_token(secrets: Dict[str, Any], env: str) -> str:
+
+    """
+    Retrieve the Discord bot token for the active environment from AWS Secrets.
+
+    Args:
+        secrets (Dict[str, Any]) : Parsed secret dictionary.
+        env (str) : Active environment ('prod' or 'dev').
 
     Returns:
         str: The Discord token if available, otherwise an empty string.
     """
 
-    for token_key in DISCORD_TOKEN_KEYS:
-        token = secrets.get(token_key, "").strip()
-        if token:
-            return token
-
-    return ""
+    token_key = f'DISCORD_MUSIC_BOT_TOKEN_{env.upper()}'
+    return secrets.get(token_key, '').strip()
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -96,13 +129,14 @@ def _resolve_activity_type(activity_type: str = CONST.BOT_ACTIVITY_TYPE) -> disc
 ###########################################################################################################################
 ###########################################################################################################################
 
-def _build_runtime_config(secrets: Dict[str, Any]) -> Bot_Runtime_Config:
+def _build_runtime_config(secrets: Dict[str, Any], env: str) -> Bot_Runtime_Config:
 
     """
     Build runtime Discord settings from environment variables and AWS Secrets.
 
     Args:
         secrets (Dict[str, Any]): Parsed secret dictionary.
+        env     (str): Active environment ('prod' or 'dev').
 
     Returns:
         Bot_Runtime_Config: Runtime config object.
@@ -116,9 +150,14 @@ def _build_runtime_config(secrets: Dict[str, Any]) -> Bot_Runtime_Config:
     if activity_name:
         activity = discord.Activity(type = _resolve_activity_type(activity_type), name = activity_name)
 
+    channel_str = secrets.get(f'DISCORD_TEXT_CHANNEL_{env.upper()}', '').strip()
+    discord_text_channel = int(channel_str) if channel_str.isdigit() else None
+
     return Bot_Runtime_Config(
-        discord_server_name = discord_server_name,
-        activity            = activity
+        env                  = env,
+        discord_server_name  = discord_server_name,
+        activity             = activity,
+        discord_text_channel = discord_text_channel
     )
 
 ###########################################################################################################################
@@ -201,6 +240,21 @@ def _build_bot(runtime_config: Bot_Runtime_Config) -> commands.Bot:
                 bot_id   = bot.user.id
             )
         )
+        print(STR.G_BOT_ENVIRONMENT.format(environment = runtime_config.env))
+
+        if runtime_config.discord_text_channel:
+            try:
+                channel = await bot.fetch_channel(runtime_config.discord_text_channel)
+                await channel.send(MSG.BOT_STARTED)
+            except Exception as error:
+                save_exception_to_txt(error = error, title = 'Bot_Startup_Message')
+                print(
+                    STR.G_ACTION_NOT_DONE.format(
+                        user   = MODULE_NAME,
+                        action = 'send startup message to notification channel',
+                        reason = error
+                    )
+                )
 
     #######################################################################################################################
     #######################################################################################################################
@@ -265,19 +319,22 @@ def main() -> None:
 
     set_discord_logging_messages_level()
 
+    load_dotenv()
+    env = _resolve_environment()
+
     # Retrieve Discord and Spotify secrets from AWS
     secrets = get_secrets()
     if not isinstance(secrets, dict):
         secrets = {}
 
-    # Craft the Discord token
-    token = _get_discord_token(secrets)
+    # Craft the Discord token for the active environment
+    token = _get_discord_token(secrets, env)
     if not token:
-        print(STR.G_COULD_NOT_INITIALIZE_BOT.format(reason = 'Missing Discord token'))
+        print(STR.G_COULD_NOT_INITIALIZE_BOT.format(reason = f'Missing Discord token for "{env}" environment'))
         return
 
     # Configure and build the bot
-    runtime_config = _build_runtime_config(secrets)
+    runtime_config = _build_runtime_config(secrets, env)
     bot = _build_bot(runtime_config)
 
     # Run the bot

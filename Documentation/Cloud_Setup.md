@@ -237,6 +237,8 @@ Set the JSON content with:
 
     "BOT_ACTIVITY_NAME"            : "",
     "DISCORD_SERVER_NAME"          : "",
+    "DISCORD_TEXT_CHANNEL_PROD"    : "",
+    "DISCORD_TEXT_CHANNEL_DEV"     : ""
 }
 ```
 
