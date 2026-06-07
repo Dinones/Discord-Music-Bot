@@ -36,3 +36,4 @@ Youtube_Cookies.txt
 # Private
 Utils/Custom_Messages.py
 test.py
+Commands/Extra_Commands/*.py

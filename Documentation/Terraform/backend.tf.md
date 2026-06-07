@@ -20,7 +20,7 @@ This block tells Terraform to use Amazon S3 as the remote backend for its state.
 ```terraform
 terraform {
     backend "s3" {
-        key          = "discord-music-bot/terraform.tfstate"
+        key          = "terraform.tfstate"
         region       = "eu-west-1"
         use_lockfile = true
         encrypt      = true
@@ -29,7 +29,7 @@ terraform {
 ```
 
 - `bucket`: This is the S3 bucket where Terraform stores the shared state. It is intentionally omitted from the file for security reasons in a public repository. The bucket name will be specified in the `terraform init` command.
-- `key`: This is the object path inside the S3 bucket.
+- `key`: This is the object path inside the S3 bucket. Stored at the bucket root since the bucket name already identifies the project.
 - `region`: This tells Terraform which AWS region contains the S3 bucket.
 - `use_lockfile`: This enables state locking for the S3 backend. State locking helps prevent two Terraform operations from modifying the same state at the same time.
 - `encrypt`: This tells Terraform to request server-side encryption for the state object stored in S3.

@@ -7,6 +7,7 @@
 - [🧩⠀create_secret_reader_user](#create-user)
 - [🧩⠀secret_reader_user_name](#user-name)
 - [🧩⠀create_secret_reader_access_key](#create-key)
+- [🧩⠀extra_commands_bucket](#extra-commands-bucket)
 
 <br><br>
 
@@ -125,3 +126,24 @@ variable "create_secret_reader_access_key" {
     default     = true
 }
 ```
+
+<br>
+
+<a id="extra-commands-bucket"></a>
+
+## 🧩⠀extra_commands_bucket
+
+This variable sets the S3 bucket name used for the `extra-commands/` folder. It defaults to empty (disabled). The real value is never committed to git — set it in `Cloud/terraform.tfvars` (gitignored):
+
+```hcl
+extra_commands_bucket = "your-bucket-name"
+```
+
+```terraform
+variable "extra_commands_bucket" {
+    type        = string
+    description = "S3 bucket name for Extra_Commands. Set in terraform.tfvars (gitignored), leave empty to disable."
+    default     = ""
+}
+```
+

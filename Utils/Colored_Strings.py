@@ -271,3 +271,22 @@ SC_RETRIEVED_YT_COOKIES_FROM_AWS = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mSuccessfully retrieved Youtube cookies from AWS: {RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]}m{"{path}"}{RESET_FORMAT}'
+
+SC_EXTRA_COMMANDS_SKIP = \
+    f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[S3] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mS3 bucket is empty: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]}mSkipping Extra_Commands download{RESET_FORMAT}'
+
+SC_EXTRA_COMMANDS_DOWNLOADED = \
+    f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[S3] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mDownloaded {"{count}"} extra command(s) from S3{RESET_FORMAT}'
+
+SC_EXTRA_COMMANDS_NONE_FOUND = \
+    f'{INFO}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[S3] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mNo extra commands found in S3 bucket at: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]}m"{"{prefix}"}"{RESET_FORMAT}'
+
+SC_EXTRA_COMMANDS_ERROR = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[S3] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mCould not download extra commands from S3: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]}m{"{error}"}{RESET_FORMAT}'

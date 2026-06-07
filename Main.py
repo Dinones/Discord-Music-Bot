@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from Utils import Constants as CONST
 from Utils import Colored_Strings as STR
 from Utils.AWS_Secrets import get_secrets
+from Utils.AWS_S3 import download_extra_commands
 from Utils.Logs import save_exception_to_txt, set_discord_logging_messages_level
 from Utils.Music_Manager import get_music_manager, Music_Manager
 
@@ -170,6 +171,7 @@ def _register_all_commands(bot: commands.Bot) -> None:
     """
     Dynamically discover and register every command module under the "Commands" package. This loader imports each python
     module from the Commands folder and executes every function following the naming convention "register_*_command(bot)".
+    It also scans Commands/Extra_Commands/ for any modules downloaded from S3 at startup.
 
     Args:
         bot (commands.Bot): Bot instance where commands should be registered.
@@ -191,6 +193,49 @@ def _register_all_commands(bot: commands.Bot) -> None:
     for module_info in module_infos:
 
         module = importlib.import_module(f"Commands.{module_info.name}")
+
+        register_functions = [
+            member for _, member in inspect.getmembers(module, inspect.isfunction) if (
+                member.__name__.startswith("register_") and
+                member.__name__.endswith("_command")
+            )
+        ]
+
+        for register_function in register_functions:
+            register_function(bot)
+
+    _register_extra_commands(bot)
+
+###########################################################################################################################
+###########################################################################################################################
+
+def _register_extra_commands(bot: commands.Bot) -> None:
+
+    """
+    Discover and register command modules from Commands/Extra_Commands/. These files are downloaded from S3 at startup
+    and are not committed to git. Uses the same "register_*_command(bot)" naming convention as the main loader.
+
+    Args:
+        bot (commands.Bot): Bot instance where commands should be registered.
+
+    Returns:
+        None
+    """
+
+    import Commands.Extra_Commands as extra_pkg
+
+    extra_module_infos = [
+        module_info for module_info in pkgutil.iter_modules(extra_pkg.__path__) if (
+            not module_info.ispkg and
+            not module_info.name.startswith("_")
+        )
+    ]
+
+    extra_module_infos.sort(key = lambda module_info: module_info.name.lower())
+
+    for module_info in extra_module_infos:
+
+        module = importlib.import_module(f"Commands.Extra_Commands.{module_info.name}")
 
         register_functions = [
             member for _, member in inspect.getmembers(module, inspect.isfunction) if (
@@ -418,6 +463,10 @@ def main() -> None:
     if not token:
         print(STR.G_COULD_NOT_INITIALIZE_BOT.format(reason = f'Missing Discord token for "{env}" environment'))
         return
+
+    # Download any private commands stored in S3 before the bot registers its command handlers
+    s3_bucket = secrets.get("S3_EXTRA_COMMANDS_BUCKET", "").strip()
+    download_extra_commands(s3_bucket)
 
     # Configure and build the bot
     runtime_config = _build_runtime_config(secrets, env)

@@ -70,7 +70,7 @@ How to create it in AWS Console:
 This project now uses the shared S3 backend bucket:
 
 - Bucket: provided during `terraform init`
-- State path inside the bucket: `discord-music-bot/terraform.tfstate`
+- State path inside the bucket: `terraform.tfstate`
 - Region: `eu-west-1`
 
 This means Terraform will automatically:
@@ -93,6 +93,7 @@ The Terraform in this project currently creates:
 - One AWS Secrets Manager secret for the YouTube cookies file.
 - One restricted IAM user that can read only those two secrets.
 - One access key for that restricted IAM user that will allow the server to authenticate with that IAM user.
+- One `extra-commands/` folder in S3 and the corresponding IAM read permissions (only when `extra_commands_bucket` is set in `terraform.tfvars`).
 
 > [!NOTE]
 > The Terraform creates the secret containers, but not their values. That means both secret values must be filled manually in AWS. Read section [Fill the Secret Values in AWS](#fill-secrets).
@@ -289,7 +290,9 @@ Set the JSON content with:
     "BOT_ACTIVITY_NAME"            : "",
     "DISCORD_SERVER_NAME"          : "",
     "DISCORD_TEXT_CHANNEL_PROD"    : "",
-    "DISCORD_TEXT_CHANNEL_DEV"     : ""
+    "DISCORD_TEXT_CHANNEL_DEV"     : "",
+
+    "S3_EXTRA_COMMANDS_BUCKET"     : ""    // Name of the S3 bucket to enable Extra_Commands download at startup
 }
 ```
 

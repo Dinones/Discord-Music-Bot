@@ -5,6 +5,9 @@
 - [🧩⠀resource "aws_secretsmanager_secret" "discord_bot_secret" { ... }](#secret)
 - [🧩⠀resource "aws_secretsmanager_secret" "youtube_cookies_secret" { ... }](#yt-secret)
 - [🧩⠀data "aws_iam_policy_document" "secret_reader" { ... }](#policy-doc)
+  - [🔒⠀dynamic "statement" — ListExtraCommandsBucket](#list-extra)
+  - [🔒⠀dynamic "statement" — GetExtraCommands](#get-extra)
+- [🧩⠀resource "aws_s3_object" "extra_commands_folder" { ... }](#extra-folder)
 - [🧩⠀resource "aws_iam_user" "secret_reader" { ... }](#iam-user)
 - [🧩⠀resource "aws_iam_user_policy" "secret_reader" { ... }](#user-policy)
 - [🧩⠀resource "aws_iam_access_key" "secret_reader" { ... }](#access-key)
@@ -144,6 +147,90 @@ This is the most important least-privilege part of the design:
 - The user can read only these two secrets.
 - The user cannot read other secrets.
 - The user cannot manage other AWS resources.
+
+<hr>
+
+<a id="list-extra"></a>
+
+### 🔒⠀dynamic "statement" — ListExtraCommandsBucket
+
+This optional statement is only added when `var.extra_commands_bucket` is not empty. It allows the IAM user to list objects under the `discord-music-bot/Extra_Commands/` prefix so the bot can discover which command files to download at startup.
+
+```terraform
+dynamic "statement" {
+    for_each = var.extra_commands_bucket != "" ? [1] : []
+
+    content {
+        sid    = "ListExtraCommandsBucket"
+        effect = "Allow"
+
+        actions = [
+            "s3:ListBucket"
+        ]
+
+        resources = [
+            "arn:aws:s3:::${var.extra_commands_bucket}"
+        ]
+
+        condition {
+            test     = "StringLike"
+            variable = "s3:prefix"
+            values   = ["discord-music-bot/Extra_Commands/*"]
+        }
+    }
+}
+```
+
+- `for_each = var.extra_commands_bucket != "" ? [1] : []`: Generates the statement only when a bucket name is provided.
+- `condition`: Restricts `s3:ListBucket` to the `discord-music-bot/Extra_Commands/` prefix only, so the user cannot list the rest of the bucket (including the Terraform state).
+
+<hr>
+
+<a id="get-extra"></a>
+
+### 🔒⠀dynamic "statement" — GetExtraCommands
+
+This optional statement allows the IAM user to download the actual command files once they are discovered by the listing statement above.
+
+```terraform
+dynamic "statement" {
+    for_each = var.extra_commands_bucket != "" ? [1] : []
+
+    content {
+        sid    = "GetExtraCommands"
+        effect = "Allow"
+
+        actions = [
+            "s3:GetObject"
+        ]
+
+        resources = [
+            "arn:aws:s3:::${var.extra_commands_bucket}/discord-music-bot/Extra_Commands/*"
+        ]
+    }
+}
+```
+
+- `resources`: Scoped to only the `discord-music-bot/Extra_Commands/` path — the Terraform state and any other objects in the same bucket are not accessible.
+
+<br>
+
+<a id="extra-folder"></a>
+
+## 🧩⠀resource "aws_s3_object" "extra_commands_folder" { ... }
+
+This block creates the `discord-music-bot/Extra_Commands/` folder placeholder in S3. S3 has no real folders: a folder is just an empty object whose key ends with `/`. Only created when `extra_commands_bucket` is set.
+
+```terraform
+resource "aws_s3_object" "extra_commands_folder" {
+    count  = var.extra_commands_bucket != "" ? 1 : 0
+    bucket = var.extra_commands_bucket
+    key    = "discord-music-bot/Extra_Commands/"
+}
+```
+
+- `count`: Creates the object only when a bucket name is provided.
+- `key = "discord-music-bot/Extra_Commands/"`: The trailing `/` is what makes AWS Console display it as a folder.
 
 <br>
 

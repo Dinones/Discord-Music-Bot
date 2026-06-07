@@ -49,6 +49,52 @@ data "aws_iam_policy_document" "secret_reader" {
             aws_secretsmanager_secret.youtube_cookies_secret.arn
         ]
     }
+
+    dynamic "statement" {
+        for_each = var.extra_commands_bucket != "" ? [1] : []
+
+        content {
+            sid    = "ListExtraCommandsBucket"
+            effect = "Allow"
+
+            actions = [
+                "s3:ListBucket"
+            ]
+
+            resources = [
+                "arn:aws:s3:::${var.extra_commands_bucket}"
+            ]
+
+            condition {
+                test     = "StringLike"
+                variable = "s3:prefix"
+                values   = ["extra-commands/*"]
+            }
+        }
+    }
+
+    dynamic "statement" {
+        for_each = var.extra_commands_bucket != "" ? [1] : []
+
+        content {
+            sid    = "GetExtraCommands"
+            effect = "Allow"
+
+            actions = [
+                "s3:GetObject"
+            ]
+
+            resources = [
+                "arn:aws:s3:::${var.extra_commands_bucket}/extra-commands/*"
+            ]
+        }
+    }
+}
+
+resource "aws_s3_object" "extra_commands_folder" {
+    count  = var.extra_commands_bucket != "" ? 1 : 0
+    bucket = var.extra_commands_bucket
+    key    = "extra-commands/"
 }
 
 resource "aws_iam_user" "secret_reader" {
