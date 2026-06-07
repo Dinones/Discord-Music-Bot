@@ -315,6 +315,33 @@ class Music_Manager():
 ###########################################################################################################################
 ###########################################################################################################################
 
+    async def drop_songs(self, count: int) -> int:
+
+        """
+        Remove songs from the front of the queue, priority queue first then standard queue.
+
+        Args:
+            count (int): Number of songs to drop.
+
+        Returns:
+            int: Actual number of songs dropped.
+        """
+
+        dropped = 0
+
+        async with self.queues_lock:
+            while dropped < count and (self.priority_queue or self.queue):
+                if self.priority_queue:
+                    self.priority_queue.popleft()
+                else:
+                    self.queue.popleft()
+                dropped += 1
+
+        return dropped
+
+###########################################################################################################################
+###########################################################################################################################
+
     async def mark_song_played(self, song: Song_Item) -> None:
 
         """

@@ -41,6 +41,7 @@ AUTO_DISCONNECTED = 'Disconnected because alone in the voice channel for **{time
 LYRICS_NOT_FOUND  = 'No lyrics found'
 LYRICS_RETRIEVING = 'Retrieving lyrics...'
 LYRICS_MUSIC      = '(Music)'
+SKIP_COUNT_CAPPED = 'Can only skip up to **{max}** songs at once. Skipping **{max}**.'
 NO_PLAYLISTS_CONFIGURED = 'No playlists have been configured.'
 PLAYLISTS_PANEL         = 'Select a playlist:'
 

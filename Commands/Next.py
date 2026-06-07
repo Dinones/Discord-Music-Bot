@@ -17,6 +17,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from Utils import Colored_Strings as STR
 from Utils.Reactions import send_reaction
+from Utils.Music_Manager import get_music_manager
+from Utils.Embed.Queue import _MAX_SONGS
 
 from Commands.Connect import connect as connect_to_voice_channel
 
@@ -29,13 +31,14 @@ except:
 #################################################     INITIALIZATIONS     #################################################
 ###########################################################################################################################
 
-async def skip(context: commands.Context) -> None:
+async def skip(context: commands.Context, count: str = "") -> None:
 
     """
-    Skip the currently playing or paused song.
+    Skip the currently playing or paused song, optionally skipping multiple songs at once.
 
     Args:
         context (commands.Context): Discord command context.
+        count    (str): Number of songs to skip. Defaults to 1. Capped at _MAX_SONGS.
 
     Returns:
         None
@@ -60,13 +63,28 @@ async def skip(context: commands.Context) -> None:
         await context.send(MSG.BOT_NOT_PLAYING_ANYTHING)
         return
 
+    try:
+        skip_count = max(1, int(count))
+    except (ValueError, TypeError):
+        skip_count = 1
+
+    capped = skip_count > _MAX_SONGS
+    skip_count = min(skip_count, _MAX_SONGS)
+
+    if capped:
+        await context.send(MSG.SKIP_COUNT_CAPPED.format(max = _MAX_SONGS))
+
+    # Drop skip_count-1 upcoming songs; stopping the current song counts as the first skip
+    if skip_count > 1:
+        await get_music_manager().drop_songs(skip_count - 1)
+
     voice_client.stop()
 
     print(
         STR.G_ACTION_DONE.format(
             user   = context.author.name.capitalize(),
             action = "skip song",
-            result = "Skipped current song"
+            result = f"Skipped {skip_count} song(s)"
         )
     )
 
@@ -85,13 +103,13 @@ def register_next_command(bot: commands.Bot) -> None:
     """
 
     @bot.command(name = "next", aliases = ["skip", "n"])
-    async def next_command(context: commands.Context) -> None:
+    async def next_command(context: commands.Context, count: str = "") -> None:
 
         """
-        Skip the currently playing song.
+        Skip the currently playing song, or skip multiple songs at once with an optional count.
         """
 
-        await skip(context)
+        await skip(context, count)
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
