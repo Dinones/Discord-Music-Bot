@@ -465,8 +465,8 @@ async def _fetch_lyrics_with_sync(
     resolved_video : dict
 ) -> Tuple[Optional[list], float]:
 
-    loop         = asyncio.get_event_loop()
-    lyrics       = await loop.run_in_executor(None, lambda: fetch_lyrics(title = title, artists = artists, duration = duration))
+    loop   = asyncio.get_event_loop()
+    lyrics = await loop.run_in_executor(None, lambda: fetch_lyrics(title = title, artists = artists, duration = duration))
 
     if not lyrics:
         return None, 0.0
@@ -524,11 +524,25 @@ async def _play_song_to_completion(
         # Wake the awaiting coroutine from the correct thread
         bot_loop.call_soon_threadsafe(song_finished_event.set)
 
+    # Pre-warm: block in a thread-pool worker until FFmpeg has produced its first PCM frame. Without this, FFmpeg's
+    # stream-open latency (1-3 s) causes AudioPlayer's timing loop to fall behind schedule and then rapidly catch up,
+    # perceived as slow-then-fast audio at the start of every song. The discarded frame is 20 ms of audio, which is
+    # imperceptible.
+    await asyncio.get_running_loop().run_in_executor(None, player.read)
+
     voice_client.play(player, after = _after_playing)
     play_start_time = asyncio.get_running_loop().time()
 
     # Start the background task that edits the embed every _UPDATE_INTERVAL seconds
-    updater = Now_Playing_Updater(message, song, voice_client, start_time = play_start_time, seek_offset = seek_offset, lyrics_task = lyrics_task, view = view)
+    updater = Now_Playing_Updater(
+        message,
+        song,
+        voice_client,
+        start_time  = play_start_time,
+        seek_offset = seek_offset,
+        lyrics_task = lyrics_task,
+        view = view
+    )
     # Expose the updater on the manager so external commands (e.g. !rewind) can read elapsed time
     get_music_manager().current_updater = updater
     await updater.start()
@@ -713,12 +727,27 @@ async def process_global_queue(context: commands.Context) -> None:
         ))
 
         view            = Now_Playing_View(voice_client = voice_client, music_manager = music_manager)
-        now_playing_msg = await _send_now_playing_message(context, song, seek_offset = seek_offset, lyric_line = MSG.LYRICS_RETRIEVING, view = view)
+        now_playing_msg = await _send_now_playing_message(
+            context,
+            song,
+            seek_offset = seek_offset,
+            lyric_line = MSG.LYRICS_RETRIEVING,
+            view = view
+        )
 
         next_song     = await music_manager.peek_next_song()
         prefetch_task = asyncio.create_task(resolve_song_stream_url(context, next_song)) if next_song else None
 
-        await _play_song_to_completion(voice_client, player, song, now_playing_msg, context.bot.loop, seek_offset = seek_offset, lyrics_task = lyrics_task, view = view)
+        await _play_song_to_completion(
+            voice_client,
+            player,
+            song,
+            now_playing_msg,
+            context.bot.loop,
+            seek_offset = seek_offset,
+            lyrics_task = lyrics_task,
+            view = view
+        )
 
         prefetched = await _collect_prefetch(prefetch_task, next_song)
 
