@@ -37,16 +37,37 @@ MODULE_NAME = 'Playlists'
 ###########################################################################################################################
 ###########################################################################################################################
 
+class _No_Op_Message:
+
+    """Placeholder message that carries the interaction user for logging but silently drops reaction calls."""
+
+    def __init__(self, author: Any) -> None:
+        self.author = author
+
+    async def add_reaction(self, *_: Any) -> None:
+        pass
+
+    async def remove_reaction(self, *_: Any) -> None:
+        pass
+
+###########################################################################################################################
+###########################################################################################################################
+
 class _Interaction_Context:
 
     """Minimal duck-typed context built from a button interaction for use with clear() and play()."""
 
-    def __init__(self, interaction: discord.Interaction, bot: commands.Bot) -> None:
+    def __init__(
+        self,
+        interaction : discord.Interaction,
+        bot         : commands.Bot,
+        message     : Any,
+    ) -> None:
 
         self.guild   = interaction.guild
         self.author  = interaction.user
         self.channel = interaction.channel
-        self.message = interaction.message
+        self.message = message
         self.bot     = bot
 
     #######################################################################################################################
@@ -67,7 +88,13 @@ class _Interaction_Context:
 
 class _Playlist_Button(discord.ui.Button):
 
-    def __init__(self, name: str, url: str, bot: commands.Bot) -> None:
+    def __init__(
+        self,
+        name            : str,
+        url             : str,
+        bot             : commands.Bot,
+        startup_message : discord.Message | None = None,
+    ) -> None:
 
         super().__init__(
             label     = name,
@@ -75,8 +102,9 @@ class _Playlist_Button(discord.ui.Button):
             custom_id = f"playlist_{name.lower().replace(' ', '_')}"
         )
 
-        self._url = url
-        self._bot = bot
+        self._url             = url
+        self._bot             = bot
+        self._startup_message = startup_message
 
     #######################################################################################################################
     #######################################################################################################################
@@ -95,7 +123,8 @@ class _Playlist_Button(discord.ui.Button):
             )
         )
 
-        ctx = _Interaction_Context(interaction, self._bot)
+        message = self._startup_message or _No_Op_Message(interaction.user)
+        ctx     = _Interaction_Context(interaction, self._bot, message)
         await clear(ctx, send_feedback = False)
         await play(ctx, self._url, shuffle = True)
 
@@ -104,15 +133,20 @@ class _Playlist_Button(discord.ui.Button):
 
 class _Playlists_View(discord.ui.View):
 
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(
+        self,
+        bot             : commands.Bot,
+        startup_message : discord.Message | None = None,
+    ) -> None:
 
         super().__init__(timeout = None)
 
         for playlist in get_playlists():
             self.add_item(_Playlist_Button(
-                name = playlist["name"],
-                url  = playlist["url"],
-                bot  = bot
+                name            = playlist["name"],
+                url             = playlist["url"],
+                bot             = bot,
+                startup_message = startup_message,
             ))
 
 ###########################################################################################################################
@@ -148,7 +182,11 @@ async def playlists(context: commands.Context) -> None:
 ###########################################################################################################################
 ###########################################################################################################################
 
-async def send_playlists_panel(channel: discord.abc.Messageable, bot: commands.Bot) -> None:
+async def send_playlists_panel(
+    channel         : discord.abc.Messageable,
+    bot             : commands.Bot,
+    startup_message : discord.Message | None = None,
+) -> None:
 
     """
     Send the playlists button panel directly to a channel without a command context. Used at bot startup.
@@ -156,6 +194,7 @@ async def send_playlists_panel(channel: discord.abc.Messageable, bot: commands.B
     Args:
         channel (discord.abc.Messageable): Channel to send the panel to.
         bot (commands.Bot): Bot instance passed into buttons so they can build an interaction context on click.
+        startup_message (discord.Message | None): When provided, reactions from button clicks land on this message.
 
     Returns:
         None
@@ -164,7 +203,7 @@ async def send_playlists_panel(channel: discord.abc.Messageable, bot: commands.B
     if not get_playlists():
         return
 
-    view = _Playlists_View(bot)
+    view = _Playlists_View(bot, startup_message)
     await channel.send(view = view)
 
     print(

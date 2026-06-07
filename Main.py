@@ -344,9 +344,9 @@ def _build_bot(runtime_config: Bot_Runtime_Config) -> commands.Bot:
         if runtime_config.discord_text_channel:
             try:
                 from Commands.Playlists import send_playlists_panel
-                channel = await bot.fetch_channel(runtime_config.discord_text_channel)
-                await channel.send(MSG.BOT_STARTED)
-                await send_playlists_panel(channel, bot)
+                channel         = await bot.fetch_channel(runtime_config.discord_text_channel)
+                startup_message = await channel.send(MSG.BOT_STARTED)
+                await send_playlists_panel(channel, bot, startup_message)
             except Exception as error:
                 save_exception_to_txt(error = error, title = 'Bot_Startup_Message')
                 print(

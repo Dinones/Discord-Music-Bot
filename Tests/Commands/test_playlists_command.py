@@ -282,6 +282,37 @@ class Test_Playlists_Command(unittest.IsolatedAsyncioTestCase):
     #######################################################################################################################
     #######################################################################################################################
 
+    async def test_button_uses_startup_message_when_provided(self) -> None:
+
+        startup_message = Mock(add_reaction = AsyncMock(), remove_reaction = AsyncMock())
+        startup_message.author      = Mock()
+        startup_message.author.name = "Bot"
+
+        with patch("Commands.Playlists.get_playlists", return_value = _FAKE_PLAYLISTS):
+            view   = Commands.Playlists._Playlists_View(Mock(), startup_message)
+            button = view.children[0]
+
+        interaction = self._build_interaction()
+
+        with (
+            patch("Commands.Playlists.clear", new_callable = AsyncMock) as mock_clear,
+            patch("Commands.Playlists.play",  new_callable = AsyncMock),
+            patch("Commands.Playlists.print")
+        ):
+            await button.callback(interaction)
+
+        ctx_arg = mock_clear.call_args[0][0]
+        self.assertIs(
+            ctx_arg.message,
+            startup_message,
+            _color_error_message_in_red(
+                'When startup_message is provided, ctx.message should be that startup message, not _No_Op_Message.'
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
     async def test_send_playlists_panel_does_nothing_when_no_playlists(self) -> None:
 
         channel = Mock(send = AsyncMock())
