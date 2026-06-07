@@ -286,9 +286,15 @@ def get_audio_player(raw_audio_url: str, start_offset: int = 0) -> Optional[PCMV
     """
 
     try:
-        # Prepend -ss so FFmpeg seeks before opening the stream, avoiding buffering the skipped portion
+        # Prepend -ss so FFmpeg seeks before opening the stream, avoiding buffering the skipped portion.
+        # -probesize 32 / -analyzeduration 0: skip the default 5MB / 5s probe phase so FFmpeg starts
+        # outputting audio almost instantly — prevents the progress bar from getting ahead of the audio.
         seek_prefix    = f"-ss {start_offset} " if start_offset > 0 else ""
-        before_options = f"{seek_prefix}-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5"
+        before_options = (
+            f"{seek_prefix}"
+            "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5 "
+            "-probesize 32 -analyzeduration 0"
+        )
 
         # Create an FFmpeg-based audio player
         player = PCMVolumeTransformer(
