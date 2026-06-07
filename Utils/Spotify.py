@@ -1,4 +1,8 @@
 ###########################################################################################################################
+#   Spotify API integration. Handles authentication, track lookup, and playlist resolution.                               #
+###########################################################################################################################
+
+###########################################################################################################################
 ####################################################     LIBRARIES     ####################################################
 ###########################################################################################################################
 
@@ -248,7 +252,7 @@ def _get_spotify_response(url: str, headers: Dict[str, str], params: Optional[Di
 ###########################################################################################################################
 ###########################################################################################################################
 
-def _fetch_spotify_track(spotify_id: str, access_token: str) -> dict:
+def _fetch_spotify_track(spotify_id: str, access_token: str) -> Dict[str, Any]:
 
     """
     Fetch and validate a single Spotify track payload.
@@ -258,7 +262,7 @@ def _fetch_spotify_track(spotify_id: str, access_token: str) -> dict:
         access_token (str): A valid Spotify API bearer token.
 
     Returns:
-        dict: The Spotify track payload.
+        Dict[str, Any]: The Spotify track payload.
     """
 
     track_url = f"https://api.spotify.com/v1/tracks/{spotify_id}"

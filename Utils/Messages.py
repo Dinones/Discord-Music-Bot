@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#                                                                                                                         #
+#   Discord bot response message strings for error handling and user feedback.                                            #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -36,6 +36,8 @@ VOLUME_CURRENT_VOLUME = 'Current volume: **{volume}%**.'
 PING = 'Pong! Latency: **{latency} ms**.'
 REWIND_INVALID_ARGUMENT = 'Rewind argument must be a positive integer number of seconds.'
 BOT_STARTED = 'Bot is online and ready!'
+QUEUE_FINISHED    = 'The karaoke has ended!'
+AUTO_DISCONNECTED = 'Disconnected because alone in the voice channel for **{time}**.'
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################

@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#                                                                                                                         #
+#   YouTube video search, audio stream resolution, and MP3 download via yt-dlp.                                          #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -279,7 +279,7 @@ def get_audio_player(raw_audio_url: str, start_offset: int = 0) -> Optional[PCMV
 
     Args:
         raw_audio_url (str): The raw audio URL.
-        start_offset  (int): Seconds into the stream where playback should begin. Defaults to 0.
+        start_offset (int): Seconds into the stream where playback should begin. Defaults to 0.
 
     Returns:
         Optional[PCMVolumeTransformer]: The created audio player if successful, otherwise None in case of an error.

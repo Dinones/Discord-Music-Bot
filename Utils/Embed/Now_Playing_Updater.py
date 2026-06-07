@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#                                                                                                                         #
+#   Builds and live-updates the Now Playing embed with a progress bar and current lyric line.                            #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -11,9 +11,8 @@ from __future__ import annotations
 import os
 import sys
 import asyncio
-from typing import Optional
-
 import discord
+from typing import Optional
 from discord.ext import commands
 
 # Module may be executed for testing purposes and may require different import paths
@@ -62,10 +61,10 @@ def build_progress_bar(elapsed: float, duration: float, width: int = _PROGRESS_B
     Build a Unicode progress bar string for the Now Playing embed description.
 
     Args:
-        elapsed   (float): Seconds elapsed so far.
-        duration  (float): Total song duration in seconds.
-        width     (int):   Number of bar characters.
-        is_paused (bool):  When True, shows ⏸ instead of ▶.
+        elapsed (float): Seconds elapsed so far.
+        duration (float): Total song duration in seconds.
+        width (int): Number of bar characters.
+        is_paused (bool): When True, shows ⏸ instead of ▶.
 
     Returns:
         str: Formatted progress bar, e.g. "▶⠀████████░░░░░░░░░░░░⠀3:45".

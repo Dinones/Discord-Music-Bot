@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#                                                                                                                         #
+#   Core queue manager. Holds the three-tier song queue and orchestrates sequential playback.                             #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -13,12 +13,18 @@ import asyncio
 import discord
 from collections import deque
 from discord.ext import commands
-from typing import Deque, Dict, List, Optional
+from typing import Any, Deque, Dict, List, Optional, Set, Tuple
 
 # Module may be executed for testing purposes and may require different import paths
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+try:
+    from Utils import Custom_Messages as MSG
+except:
+    from Utils import Messages as MSG
+
 from Utils import Colored_Strings as STR
+from Utils.Constants import GENRE_FILTERS
 from Utils.Logs import save_exception_to_txt
 from Utils.Youtube import configure_ytdl, get_audio_player
 from Utils.Song import Song_Item, resolve_song_stream_url, enrich_song_from_video
@@ -43,6 +49,11 @@ class Music_Manager():
         self.queue          : Deque[Song_Item] = deque()
         self.played_queue   : Deque[Song_Item] = deque()
         self.priority_queue : Deque[Song_Item] = deque()
+
+        self.active_filters     : Set[str]                      = set()
+        self.was_cleared        : bool                          = False
+        self.alone_timeout_task : Optional[asyncio.Task]        = None
+        self.last_text_channel  : Optional[discord.TextChannel] = None
 
         # When using threading.Lock() with async functions, "return await ..." doesn't release the lock
         self.queues_lock = asyncio.Lock()
@@ -143,6 +154,64 @@ class Music_Manager():
 
             self.current_song = song
             return song
+
+###########################################################################################################################
+###########################################################################################################################
+
+    def _is_song_filtered(self, song: Song_Item) -> bool:
+
+        """
+        Check whether a song should be skipped based on active genre filters. Matching is case-insensitive
+        and checks both the spotify_authors and title fields.
+
+        Args:
+            song (Song_Item): Song to evaluate.
+
+        Returns:
+            bool: True if the song's artist matches any active filter, False otherwise.
+        """
+
+        if not self.active_filters:
+            return False
+
+        artist_str = str(song.get("spotify_authors", "")).lower()
+        title_str  = str(song.get("title", "")).lower()
+
+        for genre in self.active_filters:
+            for artist in GENRE_FILTERS.get(genre, []):
+                artist_lower = artist.lower()
+                if artist_lower in artist_str or artist_lower in title_str:
+                    return True
+
+        return False
+
+###########################################################################################################################
+###########################################################################################################################
+
+    async def pop_next_song_filtered(self) -> Optional[Song_Item]:
+
+        """
+        Pop next song applying genre filters to the normal queue only. Priority queue songs always bypass
+        filters. Normal queue songs whose artist matches an active filter are silently discarded until a
+        valid song is found.
+
+        Returns:
+            Optional[Song_Item]: Next playable song, or None if no valid song is available.
+        """
+
+        async with self.queues_lock:
+            if self.priority_queue:
+                song = self.priority_queue.popleft()
+                self.current_song = song
+                return song
+
+            while self.queue:
+                song = self.queue.popleft()
+                if not self._is_song_filtered(song):
+                    self.current_song = song
+                    return song
+
+            return None
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -271,7 +340,8 @@ class Music_Manager():
             self.queue.clear()
             self.priority_queue.clear()
             self.played_queue.clear()
-            self.current_song = None
+            self.current_song  = None
+            self.was_cleared   = True
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -319,13 +389,13 @@ class Music_Manager():
 ###########################################################################################################################
 ###########################################################################################################################
 
-    async def get_full_queue_snapshot(self) -> tuple:
+    async def get_full_queue_snapshot(self) -> Tuple[Optional[Song_Item], List[Song_Item], List[Song_Item]]:
 
         """
         Return a consistent snapshot of the current song, priority queue, and normal queue under one lock.
 
         Returns:
-            tuple: (current_song, list[Song_Item] priority, list[Song_Item] normal)
+            Tuple[Optional[Song_Item], List[Song_Item], List[Song_Item]]: (current_song, priority queue, normal queue)
         """
 
         async with self.queues_lock:
@@ -450,7 +520,7 @@ async def _play_song_to_completion(
     try:
         await message.delete()
     except Exception as error:
-        log_path = save_exception_to_txt(error = error, title = 'Now_Playing_Message_Delete')
+        save_exception_to_txt(error = error, title = 'Now_Playing_Message_Delete')
         print(
             STR.G_ACTION_NOT_DONE.format(
                 user   = MODULE_NAME,
@@ -458,6 +528,110 @@ async def _play_song_to_completion(
                 reason = error
             )
         )
+
+###########################################################################################################################
+###########################################################################################################################
+
+async def _resolve_stream(
+    context    : commands.Context,
+    song       : Song_Item,
+    prefetched : Optional[Tuple[Song_Item, Dict[str, Any]]]
+) -> Optional[Dict[str, Any]]:
+
+    """
+    Resolve the stream URL dict for a song. Reuses a pre-fetched result from the previous
+    iteration when the song reference matches; otherwise fetches fresh via yt-dlp.
+
+    Args:
+        context (commands.Context): Discord command context passed to yt-dlp resolution.
+        song (Song_Item): Song whose stream URL is needed.
+        prefetched (Optional[Tuple[Song_Item, Dict[str, Any]]]): (song_ref, resolved_video) cached from the
+            previous iteration, or None.
+
+    Returns:
+        Optional[Dict[str, Any]]: yt-dlp resolved video dict, or None if resolution failed.
+    """
+
+    if prefetched is not None and prefetched[0] is song:
+        return prefetched[1]
+
+    return await resolve_song_stream_url(context, song)
+
+###########################################################################################################################
+###########################################################################################################################
+
+def _build_player_for_song(
+    song           : Song_Item,
+    resolved_video : Dict[str, Any]
+) -> Optional[Tuple[discord.PCMVolumeTransformer, int]]:
+
+    """
+    Validate the resolved video URL, consume seek_offset from the song, create an audio
+    player, and enrich the song's metadata from the resolved video.
+
+    Args:
+        song (Song_Item): Song item being prepared; mutated in place (seek_offset is popped
+            and YouTube URL/duration are written back by enrich_song_from_video).
+        resolved_video (Dict[str, Any]): yt-dlp resolved video dict.
+
+    Returns:
+        Optional[Tuple[discord.PCMVolumeTransformer, int]]: (player, seek_offset) on success, or None if any step fails.
+    """
+
+    stream_url = str(resolved_video.get("url", "")).strip()
+    if not stream_url:
+        return None
+
+    # Consume seek_offset so it does not persist into played history for future !back replays
+    seek_offset = int(song.pop("seek_offset", 0) or 0)
+    player = get_audio_player(stream_url, start_offset = seek_offset)
+    if player is None:
+        return None
+
+    # Write the resolved YouTube URL and duration back into the song so embeds are accurate
+    enrich_song_from_video(song, resolved_video)
+    return player, seek_offset
+
+###########################################################################################################################
+###########################################################################################################################
+
+async def _collect_prefetch(
+    prefetch_task : Optional[asyncio.Task],
+    next_song     : Optional[Song_Item]
+) -> Optional[Tuple[Optional[Song_Item], Dict[str, Any]]]:
+
+    """
+    Await the pre-fetch task and return its result as a (song_ref, resolved_video) tuple.
+    Logs and swallows exceptions so a failed pre-fetch never kills the queue worker.
+
+    Args:
+        prefetch_task (Optional[asyncio.Task]): Background task resolving the next song's
+            stream URL, or None when no pre-fetch was started.
+        next_song (Optional[Song_Item]): The song that was pre-fetched, used as the
+            identity key in the returned tuple.
+
+    Returns:
+        Optional[Tuple[Optional[Song_Item], Dict[str, Any]]]: (next_song, resolved_video) on success, or None on failure.
+    """
+
+    if prefetch_task is None:
+        return None
+
+    try:
+        result = await prefetch_task
+        if result:
+            return (next_song, result)
+    except Exception as error:
+        save_exception_to_txt(error = error, title = 'Music_Manager_Prefetch')
+        print(
+            STR.G_ACTION_NOT_DONE.format(
+                user   = MODULE_NAME,
+                action = "pre-fetch next song",
+                reason = error
+            )
+        )
+
+    return None
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -477,16 +651,16 @@ async def process_global_queue(context: commands.Context) -> None:
         None
     """
 
-    music_manager = get_music_manager()
-    # Carries the pre-fetched (song_ref, resolved_video) from the previous iteration so the next song starts playing
-    # immediately without waiting for a fresh yt-dlp resolution
-    prefetched : Optional[tuple] = None
+    music_manager          = get_music_manager()
+    music_manager.was_cleared = False
+    prefetched             : Optional[Tuple[Song_Item, Dict[str, Any]]] = None
 
     while True:
-        # Priority queue is drained before the normal queue
-        song = await music_manager.pop_next_song()
+        song = await music_manager.pop_next_song_filtered()
         if not song:
             await music_manager.release_processing()
+            if not music_manager.was_cleared:
+                await context.send(MSG.QUEUE_FINISHED)
             break
 
         voice_client = context.guild.voice_client if context.guild else None
@@ -497,58 +671,24 @@ async def process_global_queue(context: commands.Context) -> None:
             await music_manager.release_processing()
             break
 
-        # Re-use the stream URL pre-fetched during the previous song's playback if it matches
-        if prefetched is not None and prefetched[0] is song:
-            resolved_video = prefetched[1]
-        else:
-            resolved_video = await resolve_song_stream_url(context, song)
-        
-        # Clear regardless so a failed pre-fetch does not carry over
-        prefetched = None
-
+        resolved_video = await _resolve_stream(context, song, prefetched)
+        prefetched     = None
         if not resolved_video:
             continue
 
-        stream_url = str(resolved_video.get("url", "")).strip()
-        if not stream_url:
+        player_result = _build_player_for_song(song, resolved_video)
+        if not player_result:
             continue
-
-        # Consume seek_offset so it does not persist into played history for future !back replays
-        seek_offset = int(song.pop("seek_offset", 0) or 0)
-
-        player = get_audio_player(stream_url, start_offset = seek_offset)
-        if player is None:
-            continue
-
-        # Write the resolved YouTube URL and duration back into the song so embeds are accurate
-        enrich_song_from_video(song, resolved_video)
+        player, seek_offset = player_result
 
         now_playing_msg = await _send_now_playing_message(context, song, seek_offset = seek_offset)
 
-        # Start processing the next song while the current song is playing so there is no perceptible pause between tracks
-        next_song = await music_manager.peek_next_song()
-        prefetch_task : Optional[asyncio.Task] = None
-        if next_song:
-            prefetch_task = asyncio.create_task(resolve_song_stream_url(context, next_song))
+        next_song     = await music_manager.peek_next_song()
+        prefetch_task = asyncio.create_task(resolve_song_stream_url(context, next_song)) if next_song else None
 
-        # Blocks here until the song current finishes or is skipped
         await _play_song_to_completion(voice_client, player, song, now_playing_msg, context.bot.loop, seek_offset = seek_offset)
 
-        # Awaiting here covers the rare case where the previous song was very short and the pre-fetch is still in-flight
-        if prefetch_task is not None:
-            try:
-                prefetch_result = await prefetch_task
-                if prefetch_result:
-                    prefetched = (next_song, prefetch_result)
-            except Exception as error:
-                log_path = save_exception_to_txt(error = error, title = 'Music_Manager_Prefetch')
-                print(
-                    STR.G_ACTION_NOT_DONE.format(
-                        user   = MODULE_NAME,
-                        action = "pre-fetch next song",
-                        reason = error
-                    )
-                )
+        prefetched = await _collect_prefetch(prefetch_task, next_song)
 
         if music_manager.current_song is song:
             await music_manager.mark_song_played(song)

@@ -1,4 +1,8 @@
 ###########################################################################################################################
+#   Central configuration constants, API URLs, timeouts, and environment-specific settings.                              #
+###########################################################################################################################
+
+###########################################################################################################################
 #####################################################     DISCORD     #####################################################
 ###########################################################################################################################
 
@@ -8,6 +12,8 @@ EMBED_DISC_GIF_PATH = 'Media/Others/Spinning_Disc.gif'
 BOT_ACTIVITY_TYPE = 'Listening'
 # Options: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL" or empty string to disable all
 LOGGING_LEVEL = ''
+# Seconds the bot waits alone in a voice channel before disconnecting automatically
+AUTO_DISCONNECT_TIMEOUT_SECONDS = 60 * 5
 
 ###########################################################################################################################
 #####################################################     SECRETS     #####################################################
@@ -44,3 +50,38 @@ TESTING_MP3_DOWNLOAD_OUTPUT_PATH = 'Media/Audios/'
 TESTING_SPOTIFY_SONG_LINK = 'https://open.spotify.com/track/5DoLhdU27owX1NMrKLUbUl'
 TESTING_SPOTIFY_PLAYLIST_LINK = 'https://open.spotify.com/playlist/0PenuWAdyz6JIT1nmEl77F'
 TESTING_SPOTIFY_ALBUM_LINK = 'https://open.spotify.com/album/3RQQmkQEvNCY4prGKE6oc5'
+
+###########################################################################################################################
+######################################################     FILTERS     ####################################################
+###########################################################################################################################
+
+GENRE_FILTERS = {
+    "🥘 Catalan" : [
+        "31 FAM", "Auxili", "Buhos", "Búhos", "Doctor Prats", "Els Amics de les Arts", "Els Catarres", "Els Pets",
+        "Figa Flawas", "Joan Dausà", "Julieta", "La Fúmiga", "La Pegatina", "Lildami", "Oques Grasses", "Sopa de Cabra",
+        "Sopa de Cabra", "Stay Homas", "Teràpia de Shock", "The Tyets", "Triquell", "Txarango", "Zoo",
+    ],
+
+    "💃🏽 Spanish (REM)" : [
+        "Alejandro Sanz", "Álex Ubago", "Amaia Montero", "Amaral", "Antonio Orozco", "Carlos Baute", "Celtas Cortos",
+        "Chenoa", "Dani Fernández", "Dani Martín", "David Bustamante", "David DeMaría", "David Otero", "Dvicio",
+        "Efecto Mariposa", "Efecto Pasillo", "El Canto del Loco", "El Sueño de Morfeo", "Estopa", "Extremoduro",
+        "Fito & Fitipaldis", "Fito y Fitipaldis", "Hombres G", "Jarabe de Palo", "Joaquín Sabina", "Juanes",
+        "La La Love You", "La Oreja de Van Gogh", "La Pegatina", "La Quinta Estación", "La Quinta Estacion", "Leiva",
+        "Los Rodríguez", "Los Rodriguez", "Macaco", "Maldita Nerea", "Manuel Carrasco", "Melendi", "Morat", "Nena Daconte",
+        "Pablo Alborán", "Pablo López", "Pereza", "Pignoise", "Taburete", "Marlena", "Jennifer López", "Jennifer Lopez",
+        "Julieta Venegas", "Malú", "Los Ronaldos", "Chambao", "Sergio Dalma", "Paulina Rubio", "Miguel Bosé",
+        "Manolo García", "Manolo Garcia", "Duncan Dhu", "Diego Torres", "Fangoria", "Nek", "Alaska", "Despistaos", ""
+    ],
+
+    "🪩 Reggaeton": [
+        "Ana Mena", "Andy Rivera", "Anuel AA", "Arcángel", "Bad Bunny", "Bad Gyal", "Becky G", "Bizarrap", "C. Tangana",
+        "Calle 13", "Chimbala", "Daddy Yankee", "Dani Flow", "Danny Ocean", "De La Ghetto", "Dellafuente", "Don Omar",
+        "Duki", "El Alfa", "Eladio Carrión", "Emilia", "Enrique Iglesias", "Farruko", "Feid", "J Balvin", "Jhay Cortez",
+        "Jhayco", "Juan Magán", "Karol G", "Kidd Keo", "Lirico En La Casa", "Lola Índigo", "Maluma", "Manuel Turizo",
+        "María Becerra", "Morad", "Mozart La Para", "Myke Towers", "Nicky Jam", "Nicki Nicole", "Omar Montes",
+        "Osmani García", "Ovy On The Drums", "Ozuna", "Paulo Londra", "Piso 21", "Pitbull", "Quevedo", "Rauw Alejandro",
+        "Rels B", "Residente", "Rosalía", "Ryan Castro", "RVFV", "Saiko", "Sech", "Sebastián Yatra", "Tainy", "Tiago PZK",
+        "Tini", "Trueno", "Yandel", "Eminem", "Dany Paz", "El Villano", "Marshmello", "Don Patricio", "Martin Garrix",
+    ]
+}

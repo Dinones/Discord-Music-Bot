@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#                                                                                                                         #
+#   Tests for _play_song_to_completion() in Music_Manager.                                                               #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -13,6 +13,7 @@ import sys
 import asyncio
 import unittest
 from unittest.mock import Mock, AsyncMock, patch
+from typing import Any, Dict, Tuple
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
@@ -33,7 +34,7 @@ class Test_Play_Song_To_Completion(unittest.IsolatedAsyncioTestCase):
     #######################################################################################################################
     #######################################################################################################################
 
-    def _build_voice_client(self) -> tuple:
+    def _build_voice_client(self) -> Tuple[Mock, asyncio.AbstractEventLoop]:
 
         loop = asyncio.get_event_loop()
 
@@ -51,7 +52,7 @@ class Test_Play_Song_To_Completion(unittest.IsolatedAsyncioTestCase):
     #######################################################################################################################
     #######################################################################################################################
 
-    def _build_mocks(self) -> tuple:
+    def _build_mocks(self) -> Tuple[Mock, Dict[str, Any], Mock, Mock, Mock]:
 
         message      = Mock(delete = AsyncMock())
         song         = {"title": "Test Song", "duration": 300}

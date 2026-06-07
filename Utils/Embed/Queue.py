@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#                                                                                                                         #
+#   Builds the queue Discord embed listing the current, priority, and normal queue songs.                                #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -8,9 +8,8 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
-
 import discord
+from typing import List, Optional
 
 from Utils.Song import Song_Item
 

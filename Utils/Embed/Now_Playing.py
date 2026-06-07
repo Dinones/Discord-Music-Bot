@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#                                                                                                                         #
+#   Builds the Now Playing Discord embed with song metadata, thumbnail, and progress bar.                                #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -9,10 +9,9 @@
 from __future__ import annotations
 
 import os
+import discord
 import datetime
 from typing import Optional, Tuple
-
-import discord
 
 from Utils.Song import Song_Item
 from Utils import Constants as CONST

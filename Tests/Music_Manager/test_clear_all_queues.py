@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#                                                                                                                         #
+#   Tests for Music_Manager.clear_all_queues().                                                                          #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -66,6 +66,22 @@ class Test_Clear_All_Queues(unittest.IsolatedAsyncioTestCase):
             self.manager.current_song,
             _color_error_message_in_red(
                 'current_song should be None after clear.'
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_clear_all_queues_sets_was_cleared_flag(self) -> None:
+
+        self.manager.was_cleared = False
+
+        await self.manager.clear_all_queues()
+
+        self.assertTrue(
+            self.manager.was_cleared,
+            _color_error_message_in_red(
+                'clear_all_queues() should set was_cleared to True so callers can suppress the QUEUE_FINISHED message.'
             )
         )
 

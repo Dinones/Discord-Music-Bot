@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#                                                                                                                         #
+#   Tests for Now_Playing_Updater and build_progress_bar() in Now_Playing_Updater.                                       #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -13,6 +13,7 @@ import sys
 import asyncio
 import unittest
 from unittest.mock import Mock, AsyncMock, patch
+from typing import Tuple
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
@@ -152,7 +153,7 @@ class Test_Now_Playing_Updater(unittest.IsolatedAsyncioTestCase):
     #######################################################################################################################
     #######################################################################################################################
 
-    def _build_updater(self, duration: float = 300.0, is_paused: bool = False) -> tuple:
+    def _build_updater(self, duration: float = 300.0, is_paused: bool = False) -> Tuple[Now_Playing_Updater, Mock, Mock]:
 
         message      = Mock(edit = AsyncMock())
         voice_client = Mock(is_paused = Mock(return_value = is_paused))

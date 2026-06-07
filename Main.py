@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#                                                                                                                         #
+#   Bot entry point. Loads environment config and command extensions, then starts the Discord client.                     #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import os
+import asyncio
 import discord
 import inspect
 import pkgutil
@@ -23,6 +24,7 @@ from Utils import Constants as CONST
 from Utils import Colored_Strings as STR
 from Utils.AWS_Secrets import get_secrets
 from Utils.Logs import save_exception_to_txt, set_discord_logging_messages_level
+from Utils.Music_Manager import get_music_manager, Music_Manager
 
 try:
     from Utils import Custom_Messages as MSG
@@ -203,6 +205,57 @@ def _register_all_commands(bot: commands.Bot) -> None:
 ###########################################################################################################################
 ###########################################################################################################################
 
+async def _alone_disconnect(
+    voice_client  : discord.VoiceClient,
+    music_manager : Music_Manager
+) -> None:
+
+    """
+    Sleep for the configured timeout then auto-disconnect the bot from the voice channel if it is still
+    alone. Cancelled immediately (no disconnect) if a human rejoins before the timer expires.
+
+    Args:
+        voice_client (discord.VoiceClient): Active voice connection to disconnect.
+        music_manager (Music_Manager): Shared queue manager used to clear state and look up the text channel.
+
+    Returns:
+        None
+    """
+
+    try:
+        await asyncio.sleep(CONST.AUTO_DISCONNECT_TIMEOUT_SECONDS)
+    except asyncio.CancelledError:
+        return
+
+    if voice_client.is_playing() or voice_client.is_paused():
+        voice_client.stop()
+
+    await music_manager.clear_all_queues()
+
+    try:
+        await voice_client.disconnect()
+    except Exception:
+        pass
+
+    music_manager.alone_timeout_task = None
+
+    minutes = CONST.AUTO_DISCONNECT_TIMEOUT_SECONDS // 60
+    time    = f"{minutes} minute{'s' if minutes != 1 else ''}"
+
+    print(
+        STR.G_ACTION_DONE.format(
+            user   = MODULE_NAME,
+            action = "auto-disconnect from voice channel",
+            result = f"Alone for {time}"
+        )
+    )
+
+    if music_manager.last_text_channel:
+        await music_manager.last_text_channel.send(MSG.AUTO_DISCONNECTED.format(time = time))
+
+###########################################################################################################################
+###########################################################################################################################
+
 def _build_bot(runtime_config: Bot_Runtime_Config) -> commands.Bot:
 
     """
@@ -275,7 +328,40 @@ def _build_bot(runtime_config: Bot_Runtime_Config) -> commands.Bot:
         if not message.content.startswith(CONST.BOT_PREFIX):
             return None
 
+        get_music_manager().last_text_channel = message.channel
+
         await bot.process_commands(message)
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    @bot.event
+    async def on_voice_state_update(
+        member  : discord.Member,
+        _before : discord.VoiceState,
+        _after  : discord.VoiceState
+    ) -> None:
+
+        if member.bot:
+            return
+
+        music_manager = get_music_manager()
+        voice_client  = member.guild.voice_client
+
+        if voice_client is None or not voice_client.is_connected():
+            return
+
+        non_bot_members = [m for m in voice_client.channel.members if not m.bot]
+
+        if not non_bot_members:
+            if music_manager.alone_timeout_task is None or music_manager.alone_timeout_task.done():
+                music_manager.alone_timeout_task = asyncio.create_task(
+                    _alone_disconnect(voice_client, music_manager)
+                )
+        else:
+            if music_manager.alone_timeout_task and not music_manager.alone_timeout_task.done():
+                music_manager.alone_timeout_task.cancel()
+                music_manager.alone_timeout_task = None
 
     #######################################################################################################################
     #######################################################################################################################
