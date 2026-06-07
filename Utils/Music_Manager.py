@@ -28,7 +28,7 @@ from Utils.Constants import GENRE_FILTERS
 from Utils.Logs import save_exception_to_txt
 from Utils.Youtube import configure_ytdl, get_audio_player
 from Utils.Song import Song_Item, resolve_song_stream_url, enrich_song_from_video
-from Utils.Embed.Now_Playing_Updater import Now_Playing_Updater, _send_now_playing_message
+from Utils.Embed.Now_Playing_Updater import Now_Playing_Updater, Now_Playing_View, _send_now_playing_message
 from Utils.Lyrics import fetch_lyrics, fetch_youtube_captions, calculate_lyric_sync_offset
 
 ###########################################################################################################################
@@ -486,7 +486,8 @@ async def _play_song_to_completion(
     message      : discord.Message,
     bot_loop     : asyncio.AbstractEventLoop,
     seek_offset  : int = 0,
-    lyrics_task  : Optional[asyncio.Task] = None
+    lyrics_task  : Optional[asyncio.Task] = None,
+    view         : Optional[Now_Playing_View] = None
 ) -> None:
 
     """
@@ -527,7 +528,7 @@ async def _play_song_to_completion(
     play_start_time = asyncio.get_running_loop().time()
 
     # Start the background task that edits the embed every _UPDATE_INTERVAL seconds
-    updater = Now_Playing_Updater(message, song, voice_client, start_time = play_start_time, seek_offset = seek_offset, lyrics_task = lyrics_task)
+    updater = Now_Playing_Updater(message, song, voice_client, start_time = play_start_time, seek_offset = seek_offset, lyrics_task = lyrics_task, view = view)
     # Expose the updater on the manager so external commands (e.g. !rewind) can read elapsed time
     get_music_manager().current_updater = updater
     await updater.start()
@@ -711,12 +712,13 @@ async def process_global_queue(context: commands.Context) -> None:
             resolved_video = resolved_video
         ))
 
-        now_playing_msg = await _send_now_playing_message(context, song, seek_offset = seek_offset, lyric_line = MSG.LYRICS_RETRIEVING)
+        view            = Now_Playing_View(voice_client = voice_client, music_manager = music_manager)
+        now_playing_msg = await _send_now_playing_message(context, song, seek_offset = seek_offset, lyric_line = MSG.LYRICS_RETRIEVING, view = view)
 
         next_song     = await music_manager.peek_next_song()
         prefetch_task = asyncio.create_task(resolve_song_stream_url(context, next_song)) if next_song else None
 
-        await _play_song_to_completion(voice_client, player, song, now_playing_msg, context.bot.loop, seek_offset = seek_offset, lyrics_task = lyrics_task)
+        await _play_song_to_completion(voice_client, player, song, now_playing_msg, context.bot.loop, seek_offset = seek_offset, lyrics_task = lyrics_task, view = view)
 
         prefetched = await _collect_prefetch(prefetch_task, next_song)
 

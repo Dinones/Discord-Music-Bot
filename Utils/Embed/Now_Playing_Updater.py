@@ -12,7 +12,7 @@ import os
 import sys
 import asyncio
 import discord
-from typing import Optional, List, Tuple
+from typing import Any, List, Optional, Tuple
 from discord.ext import commands
 
 # Module may be executed for testing purposes and may require different import paths
@@ -34,6 +34,127 @@ except:
 # Seconds between embed edits (~1 update per 5 s keeps well within Discord's rate limits)
 _UPDATE_INTERVAL   = 1
 _PROGRESS_BAR_WIDTH = 20
+
+###########################################################################################################################
+###########################################################################################################################
+
+class Now_Playing_View(discord.ui.View):
+
+    """
+    Discord UI view attached to the Now Playing embed. Provides ⏪ / ⏸️▶️ / ⏩ control buttons.
+    """
+
+    def __init__(
+        self,
+        voice_client  : discord.VoiceClient,
+        music_manager : Any,
+    ) -> None:
+
+        """
+        Initialise the view and register the three control buttons.
+
+        Args:
+            voice_client (discord.VoiceClient): Active voice connection used to control playback.
+            music_manager (Any): Global Music_Manager instance used to navigate the played history.
+
+        Returns:
+            None
+        """
+
+        super().__init__(timeout = None)
+
+        self._voice_client  = voice_client
+        self._music_manager = music_manager
+
+        prev_btn          = discord.ui.Button(
+            emoji     = "⏪",
+            style     = discord.ButtonStyle.secondary,
+            custom_id = "now_playing_prev",
+            row       = 0
+        )
+        prev_btn.callback = self._on_previous
+        self.add_item(prev_btn)
+
+        self._play_pause_btn          = discord.ui.Button(
+            emoji     = "⏸️",
+            style     = discord.ButtonStyle.secondary,
+            custom_id = "now_playing_play_pause",
+            row       = 0
+        )
+        self._play_pause_btn.callback = self._on_play_pause
+        self.add_item(self._play_pause_btn)
+
+        next_btn          = discord.ui.Button(
+            emoji     = "⏩",
+            style     = discord.ButtonStyle.secondary,
+            custom_id = "now_playing_next",
+            row       = 0
+        )
+        next_btn.callback = self._on_next
+        self.add_item(next_btn)
+
+    ###########################################################################################################################
+    ###########################################################################################################################
+
+    async def _on_previous(self, interaction: discord.Interaction) -> None:
+
+        await interaction.response.defer()
+
+        previous_song = await self._music_manager.pop_last_played_song()
+        if not previous_song:
+            return
+
+        await self._music_manager.prepare_back_playback(previous_song, self._music_manager.current_song)
+        self._voice_client.stop()
+
+    ###########################################################################################################################
+    ###########################################################################################################################
+
+    async def _on_play_pause(self, interaction: discord.Interaction) -> None:
+
+        await interaction.response.defer()
+
+        vc = self._voice_client
+        if vc.is_paused():
+            vc.resume()
+            self._play_pause_btn.emoji = "⏸️"
+        elif vc.is_playing():
+            vc.pause()
+            self._play_pause_btn.emoji = "▶️"
+
+        # Update the button immediately; the updater will also sync on the next tick
+        try:
+            await interaction.message.edit(view = self)
+        except Exception:
+            pass
+
+    ###########################################################################################################################
+    ###########################################################################################################################
+
+    async def _on_next(self, interaction: discord.Interaction) -> None:
+
+        await interaction.response.defer()
+
+        vc = self._voice_client
+        if vc.is_playing() or vc.is_paused():
+            vc.stop()
+
+    ###########################################################################################################################
+    ###########################################################################################################################
+
+    def sync_play_pause(self, is_paused: bool) -> None:
+
+        """
+        Sync the play/pause button emoji to the current voice client pause state.
+
+        Args:
+            is_paused (bool): Whether the voice client is currently paused.
+
+        Returns:
+            None
+        """
+
+        self._play_pause_btn.emoji = "▶️" if is_paused else "⏸️"
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -90,7 +211,8 @@ async def _send_now_playing_message(
     context     : commands.Context,
     song        : Song_Item,
     seek_offset : int = 0,
-    lyric_line  : str = ""
+    lyric_line  : str = "",
+    view        : Optional[discord.ui.View] = None
 ) -> discord.Message:
 
     """
@@ -101,6 +223,8 @@ async def _send_now_playing_message(
         context (commands.Context): Discord command context used to send the message.
         song (Song_Item): Song item that is about to play.
         seek_offset (int): Seconds into the song where playback starts (default 0).
+        lyric_line (str): Initial lyric line shown below the progress bar (default "").
+        view (Optional[discord.ui.View]): Button view to attach to the message (default None).
 
     Returns:
         discord.Message: The sent Discord message, used by Now_Playing_Updater to edit it later.
@@ -111,10 +235,13 @@ async def _send_now_playing_message(
 
     embed, embed_file = build_now_playing_embed(song, progress_bar = initial_bar, lyric_line = lyric_line)
 
+    kwargs : dict = {"embed": embed}
     if embed_file:
-        return await context.send(embed = embed, file = embed_file)
+        kwargs["file"] = embed_file
+    if view is not None:
+        kwargs["view"] = view
 
-    return await context.send(embed = embed)
+    return await context.send(**kwargs)
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -133,7 +260,8 @@ class Now_Playing_Updater:
         voice_client : discord.VoiceClient,
         start_time   : Optional[float] = None,
         seek_offset  : int = 0,
-        lyrics_task  : Optional[asyncio.Task] = None
+        lyrics_task  : Optional[asyncio.Task] = None,
+        view         : Optional[discord.ui.View] = None
     ) -> None:
 
         """
@@ -147,6 +275,10 @@ class Now_Playing_Updater:
                 when None.
             seek_offset (int): Seconds into the song where playback starts; added to elapsed so the progress bar
                 initialises at the correct position (default 0).
+            lyrics_task (Optional[asyncio.Task]): Background task resolving to (lyrics, sync_offset). When None,
+                lyrics are considered unavailable immediately.
+            view (Optional[discord.ui.View]): Button view attached to the message; kept in sync with pause state
+                on each tick.
 
         Returns:
             None
@@ -161,7 +293,8 @@ class Now_Playing_Updater:
         self._lyrics       : Optional[List[Tuple[float, str]]] = None
         self._sync_offset  : float                             = 0.0
         self._lyrics_ready : bool                              = lyrics_task is None
-        self._task         : Optional[asyncio.Task] = None
+        self._view         : Optional[discord.ui.View]         = view
+        self._task         : Optional[asyncio.Task]            = None
         # Resolved play start time and accumulated pause duration — written by _update_loop,
         # read by external callers (e.g. the !rewind command) to compute accurate elapsed time
         self._play_start_time : float = start_time if start_time is not None else 0.0
@@ -255,8 +388,15 @@ class Now_Playing_Updater:
 
             embed, _     = build_now_playing_embed(self._song, progress_bar = progress_bar, lyric_line = lyric_line)
 
+            # Sync play/pause button emoji with current voice state
+            if self._view is not None:
+                self._view.sync_play_pause(self._voice_client.is_paused())
+
             try:
-                await self._message.edit(embed = embed)
+                if self._view is not None:
+                    await self._message.edit(embed = embed, view = self._view)
+                else:
+                    await self._message.edit(embed = embed)
             except Exception:
                 # Message deleted or missing permissions: stop updating silently
                 break
