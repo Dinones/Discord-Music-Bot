@@ -292,7 +292,8 @@ Set the JSON content with:
     "DISCORD_TEXT_CHANNEL_PROD"    : "",
     "DISCORD_TEXT_CHANNEL_DEV"     : "",
 
-    "S3_EXTRA_COMMANDS_BUCKET"     : ""    // Name of the S3 bucket to enable Extra_Commands download at startup
+    "S3_EXTRA_COMMANDS_BUCKET"     : "",   // Name of the S3 bucket — enables Extra_Commands download at startup
+    "SPOTIFY_PLAYLISTS"            : []    // Array of {"name": "...", "url": "..."} objects shown as buttons by !playlists
 }
 ```
 

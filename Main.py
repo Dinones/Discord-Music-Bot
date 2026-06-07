@@ -24,6 +24,7 @@ from Utils import Constants as CONST
 from Utils import Colored_Strings as STR
 from Utils.AWS_Secrets import get_secrets
 from Utils.AWS_S3 import download_extra_commands
+from Utils.Playlists import load_playlists
 from Utils.Logs import save_exception_to_txt, set_discord_logging_messages_level
 from Utils.Music_Manager import get_music_manager, Music_Manager
 
@@ -342,8 +343,10 @@ def _build_bot(runtime_config: Bot_Runtime_Config) -> commands.Bot:
 
         if runtime_config.discord_text_channel:
             try:
+                from Commands.Playlists import send_playlists_panel
                 channel = await bot.fetch_channel(runtime_config.discord_text_channel)
                 await channel.send(MSG.BOT_STARTED)
+                await send_playlists_panel(channel, bot)
             except Exception as error:
                 save_exception_to_txt(error = error, title = 'Bot_Startup_Message')
                 print(
@@ -463,6 +466,9 @@ def main() -> None:
     if not token:
         print(STR.G_COULD_NOT_INITIALIZE_BOT.format(reason = f'Missing Discord token for "{env}" environment'))
         return
+
+    # Load Spotify playlists from secrets before the bot registers its command handlers
+    load_playlists(secrets)
 
     # Download any private commands stored in S3 before the bot registers its command handlers
     s3_bucket = secrets.get("S3_EXTRA_COMMANDS_BUCKET", "").strip()
