@@ -1,8 +1,17 @@
+## 📋⠀Table of Contents
+
+- [🧩⠀terraform { backend "s3" { ... } }](#backend-block)
+- [🔎⠀What Happens in Practice](#practice)
+
+<br><br>
+
 # 📜⠀backend.tf
 
 This file configures where Terraform stores its state. Terraform state is the file that remembers which AWS resources Terraform already manages. Without a shared state file, different computers can lose track of the same infrastructure and try to recreate it.
 
 <br>
+
+<a id="backend-block"></a>
 
 ## 🧩⠀terraform { backend "s3" { ... } }
 
@@ -26,6 +35,8 @@ terraform {
 - `encrypt`: This tells Terraform to request server-side encryption for the state object stored in S3.
 
 <br>
+
+<a id="practice"></a>
 
 ## 🔎⠀What Happens in Practice
 

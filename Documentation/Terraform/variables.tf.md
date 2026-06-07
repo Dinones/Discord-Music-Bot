@@ -1,7 +1,24 @@
+## 📋⠀Table of Contents
+
+- [🧩⠀aws_region](#aws-region)
+- [🧩⠀project_name](#project-name)
+- [🧩⠀secret_name](#secret-name)
+- [🧩⠀youtube_cookies_secret_name](#yt-secret-name)
+- [🧩⠀create_secret_reader_user](#create-user)
+- [🧩⠀secret_reader_user_name](#user-name)
+- [🧩⠀create_secret_reader_access_key](#create-key)
+
+<br><br>
+
 # 📜⠀variables.tf
 
 This file defines input variables to change values without rewriting the Terraform resources.
-aws_region
+
+<br>
+
+<a id="aws-region"></a>
+
+## 🧩⠀aws_region
 
 This variable defines the AWS region where Terraform will create resources.
 
@@ -14,6 +31,8 @@ variable "aws_region" {
 ```
 
 <br>
+
+<a id="project-name"></a>
 
 ## 🧩⠀project_name
 
@@ -29,6 +48,8 @@ variable "project_name" {
 
 <br>
 
+<a id="secret-name"></a>
+
 ## 🧩⠀secret_name
 
 This variable sets the name of the Secrets Manager secret.
@@ -42,6 +63,8 @@ variable "secret_name" {
 ```
 
 <br>
+
+<a id="yt-secret-name"></a>
 
 ## 🧩⠀youtube_cookies_secret_name
 
@@ -57,6 +80,8 @@ variable "youtube_cookies_secret_name" {
 
 <br>
 
+<a id="create-user"></a>
+
 ## 🧩⠀create_secret_reader_user
 
 This variable controls whether Terraform should create the restricted IAM user. If set to `false`, Terraform will skip the IAM user and anything that depends on it.
@@ -71,6 +96,8 @@ variable "create_secret_reader_user" {
 
 <br>
 
+<a id="user-name"></a>
+
 ## 🧩⠀secret_reader_user_name
 
 This variable defines the username for the restricted IAM user that reads both bot and cookies secrets.
@@ -84,6 +111,8 @@ variable "secret_reader_user_name" {
 ```
 
 <br>
+
+<a id="create-key"></a>
 
 ## 🧩⠀create_secret_reader_access_key
 

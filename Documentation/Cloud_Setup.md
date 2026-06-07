@@ -1,8 +1,33 @@
+## 📋ㅤTable of Contents
+
+- [🪣ㅤCreate the S3 Backend Bucket (One Time Only)](#s3-backend)
+- [🗂️ㅤConfigure the Shared Terraform State](#terraform-state)
+- [📦ㅤWhat This Terraform Creates](#what-creates)
+- [📥ㅤInstall the Required Tools](#install-tools)
+  - [🪟ㅤWindows Environment](#windows)
+  - [🐧ㅤUbuntu Environment](#ubuntu)
+- [🔐ㅤAuthenticate to AWS](#authenticate)
+- [🛠️ㅤRun Terraform](#run-terraform)
+  - [🚀ㅤInitialize Terraform](#init)
+  - [🔎ㅤPreview the Changes](#plan)
+  - [🏗️ㅤApply the Infrastructure](#apply)
+- [🪪ㅤRetrieve the Limited IAM Credentials](#credentials)
+- [🔑ㅤFill the Secret Values in AWS](#fill-secrets)
+  - [🔐ㅤFill `discord_music_bot_secrets`](#fill-bot-secret)
+  - [🔐ㅤFill `discord_music_bot_youtube_cookies`](#fill-cookies-secret)
+
+<br><br>
+
 # ☁️ㅤCloud Setup
 
 This guide explains how to run the Terraform in the `Cloud/` folder from zero and how to safely apply future changes without duplicating AWS resources or overwriting any existing value/file.
 
+> [!TIP]
+> Once the AWS infrastructure is set up, configure billing alerts and a budget hard-block to protect against unexpected charges. See <a href="./AWS_Cost_Protection.md">AWS_Cost_Protection.md</a>.
+
 <br>
+
+<a id="s3-backend"></a>
 
 ## 🪣ㅤCreate the S3 Backend Bucket (One Time Only)
 
@@ -38,6 +63,8 @@ How to create it in AWS Console:
 
 <br>
 
+<a id="terraform-state"></a>
+
 ## 🗂️ㅤConfigure the Shared Terraform State
 
 This project now uses the shared S3 backend bucket:
@@ -56,6 +83,8 @@ You do **NOT** need to manually download or upload the `terraform.tfstate` file.
 
 <br>
 
+<a id="what-creates"></a>
+
 ## 📦ㅤWhat This Terraform Creates
 
 The Terraform in this project currently creates:
@@ -66,19 +95,25 @@ The Terraform in this project currently creates:
 - One access key for that restricted IAM user that will allow the server to authenticate with that IAM user.
 
 > [!NOTE]
-> The Terraform creates the secret containers, but not their values. That means both secret values must be filled manually in AWS. Read section [Fill the Secret Values in AWS](#sec:fill-secret-value).
+> The Terraform creates the secret containers, but not their values. That means both secret values must be filled manually in AWS. Read section [Fill the Secret Values in AWS](#fill-secrets).
 
 <br>
+
+<a id="install-tools"></a>
 
 ## 📥ㅤInstall the Required Tools
 
 Install **Terraform** and **AWS CLI**.
+
+<a id="windows"></a>
 
 ### 🪟ㅤWindows Environment
 
 ```bash
 choco install terraform awscli -y
 ```
+
+<a id="ubuntu"></a>
 
 ### 🐧ㅤUbuntu Environment
 
@@ -108,6 +143,8 @@ You can now safely delete any downloaded folders like `aws/` or `awscliv2.zip`.
 
 <br>
 
+<a id="authenticate"></a>
+
 ## 🔐ㅤAuthenticate to AWS
 
 Before running Terraform, authenticate with an AWS identity that has permission to read the S3 bucket mentioned before and create:
@@ -128,7 +165,11 @@ aws configure
 
 <br>
 
+<a id="run-terraform"></a>
+
 ## 🛠️ㅤRun Terraform
+
+<a id="init"></a>
 
 ### 🚀ㅤInitialize Terraform
 
@@ -153,6 +194,8 @@ What this does:
 
 <hr>
 
+<a id="plan"></a>
+
 ### 🔎ㅤPreview the Changes
 
 Now, preview the changes by running:
@@ -166,6 +209,8 @@ This is one of the most important commands. It shows what Terraform wants to do 
 If the plan shows something unexpected, stop there and review it before applying.
 
 <hr>
+
+<a id="apply"></a>
 
 ### 🏗️ㅤApply the Infrastructure
 
@@ -186,6 +231,8 @@ yes
 After that, Terraform will create the AWS resources defined in the `Cloud/` folder.
 
 <br>
+
+<a id="credentials"></a>
 
 ## 🪪ㅤRetrieve the Limited IAM Credentials
 
@@ -214,6 +261,8 @@ Set:
 
 <br>
 
+<a id="fill-secrets"></a>
+
 ## 🔑ㅤFill the Secret Values in AWS
 <a id="sec:fill-secret-value"></a>
 
@@ -222,6 +271,8 @@ After the secrets have been created, go to:
 `AWS Console` → `Secrets Manager` **→** *Select the secret* → `Edit secret value`
 
 <hr>
+
+<a id="fill-bot-secret"></a>
 
 ### 🔐ㅤFill `discord_music_bot_secrets`
 
@@ -246,6 +297,8 @@ Set the JSON content with:
 > Terraform does not manage this secret value, so if the JSON is filled manually and Terraform is run again later, Terraform should not replace it with an empty JSON object.
 
 <hr>
+
+<a id="fill-cookies-secret"></a>
 
 ### 🔐ㅤFill `discord_music_bot_youtube_cookies`
 

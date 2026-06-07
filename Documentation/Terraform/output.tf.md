@@ -1,8 +1,22 @@
+## 📋⠀Table of Contents
+
+- [🧩⠀output "secret_arn" { ... }](#secret-arn)
+- [🧩⠀output "secret_name" { ... }](#secret-name)
+- [🧩⠀output "youtube_cookies_secret_arn" { ... }](#yt-secret-arn)
+- [🧩⠀output "youtube_cookies_secret_name" { ... }](#yt-secret-name)
+- [🧩⠀output "secret_reader_iam_user_name" { ... }](#user-name)
+- [🧩⠀output "secret_reader_access_key_id" { ... }](#access-key-id)
+- [🧩⠀output "secret_reader_secret_access_key" { ... }](#secret-access-key)
+
+<br><br>
+
 # 📜⠀output.tf
 
 This file defines Terraform outputs. Outputs are values Terraform prints or makes available after `terraform apply`. They are useful when you need to know what Terraform created.
 
 <br>
+
+<a id="secret-arn"></a>
 
 ## 🧩⠀output "secret_arn" { ... }
 
@@ -19,6 +33,8 @@ output "secret_arn" {
 
 <br>
 
+<a id="secret-name"></a>
+
 ## 🧩⠀output "secret_name" { ... }
 
 This output exposes the secret name.
@@ -33,6 +49,8 @@ output "secret_name" {
 - `value = aws_secretsmanager_secret.discord_bot_secret.name`: This returns the human-readable secret name, such as `discord_music_bot_secrets`.
 
 <br>
+
+<a id="yt-secret-arn"></a>
 
 ## 🧩⠀output "youtube_cookies_secret_arn" { ... }
 
@@ -49,6 +67,8 @@ output "youtube_cookies_secret_arn" {
 
 <br>
 
+<a id="yt-secret-name"></a>
+
 ## 🧩⠀output "youtube_cookies_secret_name" { ... }
 
 This output exposes the name of the YouTube cookies secret.
@@ -63,6 +83,8 @@ output "youtube_cookies_secret_name" {
 - `value`: This returns the human-readable secret name, such as `discord_music_bot_youtube_cookies`.
 
 <br>
+
+<a id="user-name"></a>
 
 ## 🧩⠀output "secret_reader_iam_user_name" { ... }
 
@@ -80,6 +102,8 @@ output "secret_reader_iam_user_name" {
   - if the IAM user is disabled, Terraform returns `null`
 
 <br>
+
+<a id="access-key-id"></a>
 
 ## 🧩⠀output "secret_reader_access_key_id" { ... }
 
@@ -99,6 +123,8 @@ output "secret_reader_access_key_id" {
 - `sensitive`: This tells Terraform to hide the value from normal console output because it is security-related. Even though the access key ID is less sensitive than the secret access key, hiding it is still a cautious choice.
 
 <br>
+
+<a id="secret-access-key"></a>
 
 ## 🧩⠀output "secret_reader_secret_access_key" { ... }
 

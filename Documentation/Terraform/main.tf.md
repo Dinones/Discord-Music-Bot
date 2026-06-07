@@ -1,8 +1,23 @@
+## 📋⠀Table of Contents
+
+- [🧩⠀terraform { ... }](#terraform-block)
+- [🧩⠀provider "aws" { ... }](#provider)
+- [🧩⠀resource "aws_secretsmanager_secret" "discord_bot_secret" { ... }](#secret)
+- [🧩⠀resource "aws_secretsmanager_secret" "youtube_cookies_secret" { ... }](#yt-secret)
+- [🧩⠀data "aws_iam_policy_document" "secret_reader" { ... }](#policy-doc)
+- [🧩⠀resource "aws_iam_user" "secret_reader" { ... }](#iam-user)
+- [🧩⠀resource "aws_iam_user_policy" "secret_reader" { ... }](#user-policy)
+- [🧩⠀resource "aws_iam_access_key" "secret_reader" { ... }](#access-key)
+
+<br><br>
+
 # 📜⠀main.tf
 
 This file contains the main infrastructure definition. It tells Terraform which provider to use and which AWS resources should exist.
 
 <br>
+
+<a id="terraform-block"></a>
 
 ## 🧩⠀terraform { ... }
 
@@ -23,6 +38,8 @@ terraform {
 
 <br>
 
+<a id="provider"></a>
+
 ## 🧩⠀provider "aws" { ... }
 
 This block tells Terraform how to connect to AWS. Terraform will create resources in the AWS region stored in the variable `aws_region`.
@@ -34,6 +51,8 @@ provider "aws" {
 ```
 
 <br>
+
+<a id="secret"></a>
 
 ## 🧩⠀resource "aws_secretsmanager_secret" "discord_bot_secret" { ... }
 
@@ -61,6 +80,8 @@ resource "aws_secretsmanager_secret" "discord_bot_secret" {
 
 <br>
 
+<a id="yt-secret"></a>
+
 ## 🧩⠀resource "aws_secretsmanager_secret" "youtube_cookies_secret" { ... }
 
 This block creates a second AWS Secrets Manager secret used to store the YouTube cookies file.
@@ -84,6 +105,8 @@ resource "aws_secretsmanager_secret" "youtube_cookies_secret" {
 - `tags`: Same ownership/management tags as the other resources.
 
 <br>
+
+<a id="policy-doc"></a>
 
 ## 🧩⠀data "aws_iam_policy_document" "secret_reader" { ... }
 
@@ -124,6 +147,8 @@ This is the most important least-privilege part of the design:
 
 <br>
 
+<a id="iam-user"></a>
+
 ## 🧩⠀resource "aws_iam_user" "secret_reader" { ... }
 
 This block creates a restricted IAM user for the server.
@@ -150,6 +175,8 @@ resource "aws_iam_user" "secret_reader" {
 
 <br>
 
+<a id="user-policy"></a>
+
 ## 🧩⠀resource "aws_iam_user_policy" "secret_reader" { ... }
 
 This block attaches the policy document to the IAM user as an inline policy.
@@ -170,6 +197,8 @@ resource "aws_iam_user_policy" "secret_reader" {
     - One item at index `0`.
     - No items at all.
 - `policy`: This uses the policy document built earlier in the `data "aws_iam_policy_document"` block.
+
+<a id="access-key"></a>
 
 ## 🧩⠀resource "aws_iam_access_key" "secret_reader" { ... }
 
