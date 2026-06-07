@@ -12,7 +12,7 @@ import os
 import sys
 import asyncio
 import discord
-from typing import Optional
+from typing import Optional, List, Tuple
 from discord.ext import commands
 
 # Module may be executed for testing purposes and may require different import paths
@@ -20,6 +20,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".
 
 from Utils.Song import Song_Item
 from Utils.Embed.Now_Playing import build_now_playing_embed
+from Utils.Lyrics import get_current_lyric_line
+
+try:
+    from Utils import Custom_Messages as MSG
+except:
+    from Utils import Messages as MSG
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
@@ -83,7 +89,8 @@ def build_progress_bar(elapsed: float, duration: float, width: int = _PROGRESS_B
 async def _send_now_playing_message(
     context     : commands.Context,
     song        : Song_Item,
-    seek_offset : int = 0
+    seek_offset : int = 0,
+    lyric_line  : str = ""
 ) -> discord.Message:
 
     """
@@ -102,7 +109,7 @@ async def _send_now_playing_message(
     duration    = float(song.get("duration") or 0)
     initial_bar = build_progress_bar(float(seek_offset), duration) if duration else ""
 
-    embed, embed_file = build_now_playing_embed(song, progress_bar = initial_bar)
+    embed, embed_file = build_now_playing_embed(song, progress_bar = initial_bar, lyric_line = lyric_line)
 
     if embed_file:
         return await context.send(embed = embed, file = embed_file)
@@ -125,7 +132,8 @@ class Now_Playing_Updater:
         song         : Song_Item,
         voice_client : discord.VoiceClient,
         start_time   : Optional[float] = None,
-        seek_offset  : int = 0
+        seek_offset  : int = 0,
+        lyrics_task  : Optional[asyncio.Task] = None
     ) -> None:
 
         """
@@ -149,6 +157,10 @@ class Now_Playing_Updater:
         self._voice_client = voice_client
         self._start_time   = start_time
         self._seek_offset  = seek_offset
+        self._lyrics_task  = lyrics_task
+        self._lyrics       : Optional[List[Tuple[float, str]]] = None
+        self._sync_offset  : float                             = 0.0
+        self._lyrics_ready : bool                              = lyrics_task is None
         self._task         : Optional[asyncio.Task] = None
         # Resolved play start time and accumulated pause duration — written by _update_loop,
         # read by external callers (e.g. the !rewind command) to compute accurate elapsed time
@@ -180,6 +192,9 @@ class Now_Playing_Updater:
         Returns:
             None
         """
+
+        if self._lyrics_task is not None and not self._lyrics_task.done():
+            self._lyrics_task.cancel()
 
         if self._task is not None:
             self._task.cancel()
@@ -225,7 +240,20 @@ class Now_Playing_Updater:
 
             elapsed      = max(0.0, min(now - start_time - self._paused_acc + self._seek_offset, duration))
             progress_bar = build_progress_bar(elapsed, duration, is_paused = self._voice_client.is_paused())
-            embed, _     = build_now_playing_embed(self._song, progress_bar = progress_bar)
+
+            if self._lyrics_task is not None and self._lyrics_task.done():
+                self._lyrics, self._sync_offset = self._lyrics_task.result()
+                self._lyrics_task  = None
+                self._lyrics_ready = True
+
+            if not self._lyrics_ready:
+                lyric_line = MSG.LYRICS_RETRIEVING
+            elif self._lyrics is None:
+                lyric_line = MSG.LYRICS_NOT_FOUND
+            else:
+                lyric_line = get_current_lyric_line(self._lyrics, elapsed - self._sync_offset)
+
+            embed, _     = build_now_playing_embed(self._song, progress_bar = progress_bar, lyric_line = lyric_line)
 
             try:
                 await self._message.edit(embed = embed)

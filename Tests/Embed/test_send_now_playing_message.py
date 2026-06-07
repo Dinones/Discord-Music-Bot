@@ -138,7 +138,7 @@ class Test_Send_Now_Playing_Message(unittest.IsolatedAsyncioTestCase):
         song            = {"title": "Test Song", "duration": 0}
         captured_kwargs = {}
 
-        def _capture_embed(song, progress_bar: str = "") -> tuple:
+        def _capture_embed(song, progress_bar: str = "", **kwargs) -> tuple:
             captured_kwargs["progress_bar"] = progress_bar
             return Mock(), None
 
@@ -169,7 +169,7 @@ class Test_Send_Now_Playing_Message(unittest.IsolatedAsyncioTestCase):
         song            = {"title": "Test Song", "duration": 300}
         captured_kwargs = {}
 
-        def _capture_embed(song, progress_bar: str = "") -> tuple:
+        def _capture_embed(song, progress_bar: str = "", **kwargs) -> tuple:
             captured_kwargs["progress_bar"] = progress_bar
             return Mock(), None
 
@@ -200,7 +200,7 @@ class Test_Send_Now_Playing_Message(unittest.IsolatedAsyncioTestCase):
         song            = {"title": "Test Song", "duration": 300}
         captured_kwargs = {}
 
-        def _capture_embed(song, progress_bar: str = "") -> tuple:
+        def _capture_embed(song, progress_bar: str = "", **kwargs) -> tuple:
             captured_kwargs["progress_bar"] = progress_bar
             return Mock(), None
 

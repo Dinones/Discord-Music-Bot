@@ -29,6 +29,7 @@ from Utils.Logs import save_exception_to_txt
 from Utils.Youtube import configure_ytdl, get_audio_player
 from Utils.Song import Song_Item, resolve_song_stream_url, enrich_song_from_video
 from Utils.Embed.Now_Playing_Updater import Now_Playing_Updater, _send_now_playing_message
+from Utils.Lyrics import fetch_lyrics, fetch_youtube_captions, calculate_lyric_sync_offset
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
@@ -457,13 +458,35 @@ def get_music_manager() -> Music_Manager:
 ###########################################################################################################################
 ###########################################################################################################################
 
+async def _fetch_lyrics_with_sync(
+    title          : str,
+    artists        : str,
+    duration       : int,
+    resolved_video : dict
+) -> Tuple[Optional[list], float]:
+
+    loop         = asyncio.get_event_loop()
+    lyrics       = await loop.run_in_executor(None, lambda: fetch_lyrics(title = title, artists = artists, duration = duration))
+
+    if not lyrics:
+        return None, 0.0
+
+    vtt_captions = await loop.run_in_executor(None, lambda: fetch_youtube_captions(resolved_video))
+    sync_offset  = calculate_lyric_sync_offset(lyrics, vtt_captions) if vtt_captions else 0.0
+
+    return lyrics, sync_offset
+
+###########################################################################################################################
+###########################################################################################################################
+
 async def _play_song_to_completion(
     voice_client : discord.VoiceClient,
     player       : discord.AudioSource,
     song         : Song_Item,
     message      : discord.Message,
     bot_loop     : asyncio.AbstractEventLoop,
-    seek_offset  : int = 0
+    seek_offset  : int = 0,
+    lyrics_task  : Optional[asyncio.Task] = None
 ) -> None:
 
     """
@@ -504,7 +527,7 @@ async def _play_song_to_completion(
     play_start_time = asyncio.get_running_loop().time()
 
     # Start the background task that edits the embed every _UPDATE_INTERVAL seconds
-    updater = Now_Playing_Updater(message, song, voice_client, start_time = play_start_time, seek_offset = seek_offset)
+    updater = Now_Playing_Updater(message, song, voice_client, start_time = play_start_time, seek_offset = seek_offset, lyrics_task = lyrics_task)
     # Expose the updater on the manager so external commands (e.g. !rewind) can read elapsed time
     get_music_manager().current_updater = updater
     await updater.start()
@@ -681,12 +704,19 @@ async def process_global_queue(context: commands.Context) -> None:
             continue
         player, seek_offset = player_result
 
-        now_playing_msg = await _send_now_playing_message(context, song, seek_offset = seek_offset)
+        lyrics_task = asyncio.create_task(_fetch_lyrics_with_sync(
+            title          = str(song.get("title", "")),
+            artists        = str(song.get("spotify_authors", "")),
+            duration       = int(song.get("duration") or 0),
+            resolved_video = resolved_video
+        ))
+
+        now_playing_msg = await _send_now_playing_message(context, song, seek_offset = seek_offset, lyric_line = MSG.LYRICS_RETRIEVING)
 
         next_song     = await music_manager.peek_next_song()
         prefetch_task = asyncio.create_task(resolve_song_stream_url(context, next_song)) if next_song else None
 
-        await _play_song_to_completion(voice_client, player, song, now_playing_msg, context.bot.loop, seek_offset = seek_offset)
+        await _play_song_to_completion(voice_client, player, song, now_playing_msg, context.bot.loop, seek_offset = seek_offset, lyrics_task = lyrics_task)
 
         prefetched = await _collect_prefetch(prefetch_task, next_song)
 

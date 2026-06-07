@@ -26,7 +26,7 @@ _MAX_TITLE_LEN = 52
 ###########################################################################################################################
 ###########################################################################################################################
 
-def build_now_playing_embed(song: Song_Item, progress_bar: str = "") -> Tuple[discord.Embed, Optional[discord.File]]:
+def build_now_playing_embed(song: Song_Item, progress_bar: str = "", lyric_line: str = "") -> Tuple[discord.Embed, Optional[discord.File]]:
 
     """
     Build a Discord embed for the currently playing song.
@@ -55,8 +55,9 @@ def build_now_playing_embed(song: Song_Item, progress_bar: str = "") -> Tuple[di
     embed = discord.Embed(title = formatted_title or "Unknown", color = _EMBED_COLOR)
     if url:
         embed.url = url
-    if progress_bar:
-        embed.description = progress_bar
+    description_parts = [p for p in [progress_bar, f"*{lyric_line}*" if lyric_line else ""] if p]
+    if description_parts:
+        embed.description = "\n\n".join(description_parts)
 
     # Footer
     requested_by  = str(song.get("requested_by", "")).strip()

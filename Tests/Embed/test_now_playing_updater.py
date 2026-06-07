@@ -286,7 +286,7 @@ class Test_Now_Playing_Updater(unittest.IsolatedAsyncioTestCase):
 
         captured_bars: list = []
 
-        def _mock_build(song, progress_bar: str = "") -> tuple:
+        def _mock_build(song, progress_bar: str = "", **kwargs) -> tuple:
             captured_bars.append(progress_bar)
             return Mock(), None
 
@@ -316,7 +316,7 @@ class Test_Now_Playing_Updater(unittest.IsolatedAsyncioTestCase):
 
         captured_bars: list = []
 
-        def _mock_build(song, progress_bar: str = "") -> tuple:
+        def _mock_build(song, progress_bar: str = "", **kwargs) -> tuple:
             captured_bars.append(progress_bar)
             return Mock(), None
 
@@ -348,7 +348,7 @@ class Test_Now_Playing_Updater(unittest.IsolatedAsyncioTestCase):
 
         captured_bars: list = []
 
-        def _mock_build(song, progress_bar: str = "") -> tuple:
+        def _mock_build(song, progress_bar: str = "", **kwargs) -> tuple:
             captured_bars.append(progress_bar)
             return Mock(), None
 

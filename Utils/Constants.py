@@ -47,9 +47,20 @@ TESTING_YOUTUBE_LINK = 'https://www.youtube.com/watch?v=7dSMNXg-QEQ'
 TESTING_YOUTUBE_QUERY = 'La bbesita bb lean'
 TESTING_MP3_DOWNLOAD_OUTPUT_PATH = 'Media/Audios/'
 
+TESTING_LYRICS_TITLE    = 'LEAN'
+TESTING_LYRICS_ARTIST   = 'Superiority'
+TESTING_LYRICS_DURATION = 0
+
 TESTING_SPOTIFY_SONG_LINK = 'https://open.spotify.com/track/5DoLhdU27owX1NMrKLUbUl'
 TESTING_SPOTIFY_PLAYLIST_LINK = 'https://open.spotify.com/playlist/0PenuWAdyz6JIT1nmEl77F'
 TESTING_SPOTIFY_ALBUM_LINK = 'https://open.spotify.com/album/3RQQmkQEvNCY4prGKE6oc5'
+
+###########################################################################################################################
+######################################################     LRCLIB     ######################################################
+###########################################################################################################################
+
+LRCLIB_API_BASE_URL     = 'https://lrclib.net/api'
+LRCLIB_REQUEST_TIMEOUT  = 15
 
 ###########################################################################################################################
 ######################################################     FILTERS     ####################################################

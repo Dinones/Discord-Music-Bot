@@ -38,6 +38,8 @@ REWIND_INVALID_ARGUMENT = 'Rewind argument must be a positive integer number of 
 BOT_STARTED = 'Bot is online and ready!'
 QUEUE_FINISHED    = 'The karaoke has ended!'
 AUTO_DISCONNECTED = 'Disconnected because alone in the voice channel for **{time}**.'
+LYRICS_NOT_FOUND  = 'No lyrics found'
+LYRICS_RETRIEVING = 'Retrieving lyrics...'
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
