@@ -40,6 +40,7 @@ QUEUE_FINISHED    = 'The karaoke has ended!'
 AUTO_DISCONNECTED = 'Disconnected because alone in the voice channel for **{time}**.'
 LYRICS_NOT_FOUND  = 'No lyrics found'
 LYRICS_RETRIEVING = 'Retrieving lyrics...'
+LYRICS_MUSIC      = '(Music)'
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################

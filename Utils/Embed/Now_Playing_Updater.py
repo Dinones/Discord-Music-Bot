@@ -384,7 +384,7 @@ class Now_Playing_Updater:
             elif self._lyrics is None:
                 lyric_line = MSG.LYRICS_NOT_FOUND
             else:
-                lyric_line = get_current_lyric_line(self._lyrics, elapsed - self._sync_offset)
+                lyric_line = get_current_lyric_line(self._lyrics, elapsed - self._sync_offset) or MSG.LYRICS_MUSIC
 
             embed, _     = build_now_playing_embed(self._song, progress_bar = progress_bar, lyric_line = lyric_line)
 
