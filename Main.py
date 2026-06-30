@@ -317,7 +317,8 @@ def _build_bot(runtime_config: Bot_Runtime_Config) -> commands.Bot:
         command_prefix   = CONST.BOT_PREFIX,
         intents          = intents,
         activity         = runtime_config.activity,
-        case_insensitive = True # Insensitive command prefixes
+        case_insensitive = True, # Insensitive command prefixes
+        help_command     = None  # Replaced by our own !help implementation
     )
 
     # Load command handlers from every Commands/*.py module using the registration naming convention.

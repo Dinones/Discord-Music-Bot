@@ -105,9 +105,9 @@ class Test_Register_Ping_Command(unittest.IsolatedAsyncioTestCase):
             _color_error_message_in_red('ping() should send exactly one message.')
         )
         self.assertIn(
-            "!pong",
+            "Pong",
             context.send.call_args[0][0],
-            _color_error_message_in_red('ping() should reply with "!pong".')
+            _color_error_message_in_red('ping() should reply with a "Pong" message.')
         )
 
     #######################################################################################################################
@@ -126,9 +126,9 @@ class Test_Register_Ping_Command(unittest.IsolatedAsyncioTestCase):
             _color_error_message_in_red('pong() should send exactly one message.')
         )
         self.assertIn(
-            "!ping",
+            "Ping",
             context.send.call_args[0][0],
-            _color_error_message_in_red('pong() should reply with "!ping".')
+            _color_error_message_in_red('pong() should reply with a "Ping" message.')
         )
 
     #######################################################################################################################
