@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#   Tests for the !ping Discord bot command.                                                                             #
+#   Tests for the !ping and !pong Discord bot commands.                                                                   #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -51,16 +51,17 @@ class Test_Register_Ping_Command(unittest.IsolatedAsyncioTestCase):
         self.bot.latency = 0.042
         Commands.Ping.register_ping_command(self.bot)
         self.ping_command = self.bot.registered_commands.get("ping")
+        self.pong_command = self.bot.registered_commands.get("pong")
 
     #######################################################################################################################
     #######################################################################################################################
 
     def _build_context(self) -> Mock:
 
-        context           = Mock(send = AsyncMock())
-        context.author    = Mock()
+        context             = Mock(send = AsyncMock())
+        context.author      = Mock()
         context.author.name = "testuser"
-        context.bot       = self.bot
+        context.bot         = self.bot
 
         return context
 
@@ -72,14 +73,26 @@ class Test_Register_Ping_Command(unittest.IsolatedAsyncioTestCase):
         self.assertIsNotNone(
             self.ping_command,
             _color_error_message_in_red(
-                'The "register_ping_command()" function should have registered the "ping" command.'
+                'register_ping_command() should have registered the "ping" command.'
             )
         )
 
     #######################################################################################################################
     #######################################################################################################################
 
-    async def test_ping_sends_exactly_one_message(self) -> None:
+    async def test_register_ping_command_registers_pong_function(self) -> None:
+
+        self.assertIsNotNone(
+            self.pong_command,
+            _color_error_message_in_red(
+                'register_ping_command() should have registered the "pong" command.'
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_ping_sends_pong_response(self) -> None:
 
         context = self._build_context()
 
@@ -89,9 +102,71 @@ class Test_Register_Ping_Command(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(
             context.send.call_count,
             1,
-            _color_error_message_in_red(
-                'ping() should send exactly one message.'
-            )
+            _color_error_message_in_red('ping() should send exactly one message.')
+        )
+        self.assertIn(
+            "!pong",
+            context.send.call_args[0][0],
+            _color_error_message_in_red('ping() should reply with "!pong".')
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_pong_sends_ping_response(self) -> None:
+
+        context = self._build_context()
+
+        with patch("Commands.Ping.print"):
+            await self.pong_command(context)
+
+        self.assertEqual(
+            context.send.call_count,
+            1,
+            _color_error_message_in_red('pong() should send exactly one message.')
+        )
+        self.assertIn(
+            "!ping",
+            context.send.call_args[0][0],
+            _color_error_message_in_red('pong() should reply with "!ping".')
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_ping_adds_paddle_reaction(self) -> None:
+
+        context = self._build_context()
+
+        with (
+            patch("Commands.Ping.print"),
+            patch("Commands.Ping.send_reaction", new = AsyncMock()) as mock_reaction
+        ):
+            await self.ping_command(context)
+
+        self.assertEqual(
+            mock_reaction.call_args[0][1],
+            "🏓",
+            _color_error_message_in_red('ping() should call send_reaction with the 🏓 emoji.')
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_pong_adds_paddle_reaction(self) -> None:
+
+        context = self._build_context()
+
+        with (
+            patch("Commands.Ping.print"),
+            patch("Commands.Ping.send_reaction", new = AsyncMock()) as mock_reaction
+        ):
+            await self.pong_command(context)
+
+        self.assertEqual(
+            mock_reaction.call_args[0][1],
+            "🏓",
+            _color_error_message_in_red('pong() should call send_reaction with the 🏓 emoji.')
         )
 
     #######################################################################################################################
@@ -117,21 +192,20 @@ class Test_Register_Ping_Command(unittest.IsolatedAsyncioTestCase):
     #######################################################################################################################
     #######################################################################################################################
 
-    async def test_ping_adds_paddle_reaction_to_command_message(self) -> None:
+    async def test_pong_message_contains_latency(self) -> None:
 
         context = self._build_context()
 
-        with (
-            patch("Commands.Ping.print"),
-            patch("Commands.Ping.send_reaction", new = AsyncMock()) as mock_reaction
-        ):
-            await self.ping_command(context)
+        with patch("Commands.Ping.print"):
+            await self.pong_command(context)
 
-        self.assertEqual(
-            mock_reaction.call_args[0][1],
-            "🏓",
+        sent_text = context.send.call_args[0][0]
+
+        self.assertIn(
+            "42",
+            sent_text,
             _color_error_message_in_red(
-                'ping() should call send_reaction with the 🏓 emoji.'
+                'pong() should include the latency value (42 ms for bot.latency=0.042) in the sent message.'
             )
         )
 

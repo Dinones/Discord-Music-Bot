@@ -34,6 +34,7 @@ PLAYNEXT_PLAYLIST_NOT_SUPPORTED = \
 VOLUME_INVALID_ARGUMENT = 'Volume must be an integer number between **0** and **100**.'
 VOLUME_CURRENT_VOLUME = 'Current volume: **{volume}%**.'
 PING = 'Pong! Latency: **{latency} ms**.'
+PONG = 'Ping! Latency: **{latency} ms**.'
 REWIND_INVALID_ARGUMENT = 'Rewind argument must be a positive integer number of seconds.'
 SEEK_INVALID_ARGUMENT   = 'Seek argument must be a time in **MM:SS** format or a number of seconds.'
 BOT_STARTED = 'Bot is online and ready!'

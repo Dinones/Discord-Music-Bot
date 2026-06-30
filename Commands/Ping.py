@@ -1,5 +1,5 @@
 ###########################################################################################################################
-#   Implements the !ping command, which returns the bot latency.                                                         #
+#   Implements the !ping and !pong commands, which reply with the opposite command name.                                  #
 ###########################################################################################################################
 
 ###########################################################################################################################
@@ -35,7 +35,7 @@ MODULE_NAME = "Ping"
 async def ping(context: commands.Context) -> None:
 
     """
-    Reply with the bot's current WebSocket heartbeat latency.
+    Reply with !pong and the bot's current WebSocket heartbeat latency.
 
     Args:
         context (commands.Context): Discord command context.
@@ -49,8 +49,8 @@ async def ping(context: commands.Context) -> None:
     print(
         STR.G_ACTION_DONE.format(
             user   = context.author.name.capitalize(),
-            action = "show the ping",
-            result = f"Latency is {latency} ms"
+            action = "ping",
+            result = f"pong, latency is {latency} ms"
         )
     )
 
@@ -60,10 +60,38 @@ async def ping(context: commands.Context) -> None:
 ###########################################################################################################################
 ###########################################################################################################################
 
+async def pong(context: commands.Context) -> None:
+
+    """
+    Reply with !ping and the bot's current WebSocket heartbeat latency.
+
+    Args:
+        context (commands.Context): Discord command context.
+
+    Returns:
+        None
+    """
+
+    latency = int(context.bot.latency * 1000)
+
+    print(
+        STR.G_ACTION_DONE.format(
+            user   = context.author.name.capitalize(),
+            action = "pong",
+            result = f"ping, latency is {latency} ms"
+        )
+    )
+
+    await send_reaction(context.message, "🏓")
+    await context.send(MSG.PONG.format(latency = latency))
+
+###########################################################################################################################
+###########################################################################################################################
+
 def register_ping_command(bot: commands.Bot) -> None:
 
     """
-    Register the "!ping" command.
+    Register the "!ping" and "!pong" commands.
 
     Args:
         bot (commands.Bot): Bot instance where the command will be attached.
@@ -74,12 +102,11 @@ def register_ping_command(bot: commands.Bot) -> None:
 
     @bot.command(name = "ping")
     async def ping_command(context: commands.Context) -> None:
-
-        """
-        Reply with the bot's current WebSocket latency in milliseconds.
-        """
-
         await ping(context)
+
+    @bot.command(name = "pong")
+    async def pong_command(context: commands.Context) -> None:
+        await pong(context)
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
