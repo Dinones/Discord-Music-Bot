@@ -168,7 +168,7 @@ async def playlists(context: commands.Context) -> None:
         await context.send(MSG.NO_PLAYLISTS_CONFIGURED)
         return
 
-    view = _Playlists_View(context.bot)
+    view = _Playlists_View(context.bot, context.message)
     await context.send(view = view)
 
     print(

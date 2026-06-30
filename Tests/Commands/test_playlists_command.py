@@ -131,6 +131,37 @@ class Test_Playlists_Command(unittest.IsolatedAsyncioTestCase):
     #######################################################################################################################
     #######################################################################################################################
 
+    async def test_playlists_command_passes_context_message_to_view(self) -> None:
+
+        context = self._build_context()
+
+        captured_views = []
+
+        async def capture_send(*args: Any, **kwargs: Any) -> None:
+            if "view" in kwargs:
+                captured_views.append(kwargs["view"])
+
+        context.send = capture_send
+
+        with (
+            patch("Commands.Playlists.get_playlists", return_value = _FAKE_PLAYLISTS),
+            patch("Commands.Playlists.print")
+        ):
+            await self.playlists_command(context)
+
+        self.assertEqual(len(captured_views), 1)
+        button = captured_views[0].children[0]
+        self.assertIs(
+            button._startup_message,
+            context.message,
+            _color_error_message_in_red(
+                "playlists() should pass context.message to the view so button clicks react to the command message."
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
     async def test_sends_no_playlists_message_when_list_is_empty(self) -> None:
 
         context = self._build_context()
