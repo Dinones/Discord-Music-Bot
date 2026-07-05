@@ -46,7 +46,11 @@ AUTO_DISCONNECTED = 'Disconnected because alone in the voice channel for **{time
 LYRICS_NOT_FOUND  = 'No lyrics found'
 LYRICS_RETRIEVING = 'Retrieving lyrics...'
 LYRICS_MUSIC      = '(Music)'
-SKIP_COUNT_CAPPED = 'Can only skip up to **{max}** songs at once. Skipping **{max}**.'
+SKIP_COUNT_CAPPED               = 'Can only skip up to **{max}** songs at once. Skipping **{max}**.'
+DOWNLOAD_MISSING_ARGUMENT       = 'Provide a YouTube URL or search query to download.'
+DOWNLOAD_SPOTIFY_NOT_SUPPORTED  = 'Spotify URLs are not supported for download. Use a YouTube URL or song title.'
+DOWNLOAD_FAILED                 = 'Could not download the song.'
+DOWNLOAD_FILE_TOO_LARGE         = 'The file is too large to send (**{size} MB**). Discord limit is **{limit} MB**.'
 NO_PLAYLISTS_CONFIGURED = 'No playlists have been configured.'
 PLAYLISTS_PANEL         = 'Select a playlist:'
 
