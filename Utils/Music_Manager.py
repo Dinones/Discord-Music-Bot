@@ -26,10 +26,11 @@ except:
 from Utils import Colored_Strings as STR
 from Utils.Constants import GENRE_FILTERS
 from Utils.Logs import save_exception_to_txt
+from Utils.Audio_Intro import play_intro_audio
 from Utils.Youtube import configure_ytdl, get_audio_player
 from Utils.Song import Song_Item, resolve_song_stream_url, enrich_song_from_video
-from Utils.Embed.Now_Playing_Updater import Now_Playing_Updater, Now_Playing_View, _send_now_playing_message
 from Utils.Lyrics import fetch_lyrics, fetch_youtube_captions, calculate_lyric_sync_offset
+from Utils.Embed.Now_Playing_Updater import Now_Playing_Updater, Now_Playing_View, _send_now_playing_message
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
@@ -53,6 +54,7 @@ class Music_Manager():
 
         self.active_filters     : Set[str]                      = set()
         self.was_cleared        : bool                          = False
+        self.intro_played       : bool                          = False
         self.alone_timeout_task : Optional[asyncio.Task]        = None
         self.last_text_channel  : Optional[discord.TextChannel] = None
 
@@ -716,9 +718,9 @@ async def process_global_queue(context: commands.Context) -> None:
         None
     """
 
-    music_manager          = get_music_manager()
+    music_manager             = get_music_manager()
     music_manager.was_cleared = False
-    prefetched             : Optional[Tuple[Song_Item, Dict[str, Any]]] = None
+    prefetched                : Optional[Tuple[Song_Item, Dict[str, Any]]] = None
 
     while True:
         song = await music_manager.pop_next_song_filtered()
@@ -745,6 +747,11 @@ async def process_global_queue(context: commands.Context) -> None:
         if not player_result:
             continue
         player, seek_offset = player_result
+
+        if not music_manager.intro_played:
+            music_manager.intro_played = True
+            if voice_client and voice_client.is_connected():
+                await play_intro_audio(voice_client)
 
         lyrics_task = asyncio.create_task(_fetch_lyrics_with_sync(
             title          = str(song.get("title", "")),

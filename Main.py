@@ -283,6 +283,7 @@ async def _alone_disconnect(
     except Exception:
         pass
 
+    music_manager.intro_played       = False
     music_manager.alone_timeout_task = None
 
     minutes = CONST.AUTO_DISCONNECT_TIMEOUT_SECONDS // 60

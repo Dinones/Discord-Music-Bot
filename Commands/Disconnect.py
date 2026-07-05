@@ -18,6 +18,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Utils import Colored_Strings as STR
 from Utils.Reactions import send_reaction
 from Commands.Clear import clear as clear_queue
+from Utils.Music_Manager import get_music_manager
 
 try:
     from Utils import Custom_Messages as MSG
@@ -100,6 +101,7 @@ def register_disconnect_command(bot: commands.Bot) -> None:
         await clear_queue(context, send_feedback = False)
 
         await context.voice_client.disconnect()
+        get_music_manager().intro_played = False
         print(
             STR.G_ACTION_DONE.format(
                 user   = context.author.name.capitalize(),
