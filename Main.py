@@ -26,6 +26,7 @@ from Utils.AWS_Secrets import get_secrets
 from Utils.AWS_S3 import download_extra_commands
 from Utils.Playlists import load_playlists
 from Utils.Logs import save_exception_to_txt, set_discord_logging_messages_level
+from Utils.Database import init_database, record_session_end
 from Utils.Music_Manager import get_music_manager, Music_Manager
 
 try:
@@ -283,7 +284,12 @@ async def _alone_disconnect(
     except Exception:
         pass
 
-    music_manager.intro_played       = False
+    record_session_end(music_manager.session_start, music_manager.session_songs, music_manager.session_users)
+
+    music_manager.intro_played    = False
+    music_manager.session_start   = None
+    music_manager.session_songs   = 0
+    music_manager.session_users   = set()
     music_manager.alone_timeout_task = None
 
     minutes = CONST.AUTO_DISCONNECT_TIMEOUT_SECONDS // 60
@@ -468,6 +474,9 @@ def main() -> None:
     if not token:
         print(STR.G_COULD_NOT_INITIALIZE_BOT.format(reason = f'Missing Discord token for "{env}" environment'))
         return
+
+    # Initialize the stats database before commands are registered
+    init_database()
 
     # Load Spotify playlists from secrets before the bot registers its command handlers
     load_playlists(secrets)

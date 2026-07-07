@@ -130,6 +130,7 @@ async def play(context: commands.Context, args: str, shuffle: bool = False, reve
 
     # Report queue update to the user
     if len(songs_to_queue) == 1:
+        songs_to_queue[0]["explicitly_requested"] = True
         song  = songs_to_queue[0]
         title = song.get("title", "Unknown title")
         url   = song.get("playback_query", "") or song.get("spotify_url", "")

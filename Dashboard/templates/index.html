@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Stats</title>
+    <meta http-equiv="refresh" content="60">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #111827;
+            color: #f9fafb;
+            min-height: 100vh;
+            padding: 28px 32px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        /* ── Section titles ── */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #4b5563;
+            margin: 28px 0 14px 0;
+        }
+
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #1f2937;
+        }
+
+        /* ── Metric cards ── */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .card {
+            background: #1f2937;
+            border-radius: 10px;
+            padding: 18px 22px;
+            border: 1px solid #374151;
+        }
+
+        .card-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #f9fafb;
+        }
+
+        .card-blue   { border-top: 3px solid #6366f1; }
+        .card-green  { border-top: 3px solid #10b981; }
+        .card-amber  { border-top: 3px solid #f59e0b; }
+        .card-cyan   { border-top: 3px solid #06b6d4; }
+
+        /* ── Chart grid ── */
+        .row-two {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 14px;
+        }
+
+        .chart-card {
+            background: #1f2937;
+            border-radius: 10px;
+            padding: 20px 22px;
+            border: 1px solid #374151;
+        }
+
+        .chart-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #9ca3af;
+            margin-bottom: 16px;
+        }
+
+        .canvas-wrap-h { position: relative; height: 300px; }
+        .canvas-wrap-v { position: relative; height: 260px; }
+
+        /* ── Tables ── */
+        table { width: 100%; border-collapse: collapse; }
+
+        thead th {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            color: #6b7280;
+            padding: 0 12px 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+        }
+
+        tbody td {
+            padding: 10px 12px;
+            font-size: 0.88rem;
+            color: #d1d5db;
+            border-bottom: 1px solid #374151;
+        }
+
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: rgba(55, 65, 81, 0.5); }
+
+        .rank { color: #6b7280; font-size: 0.8rem; font-weight: 700; width: 36px; }
+        .song-name { font-weight: 500; color: #f3f4f6; }
+
+        .badge {
+            display: inline-block;
+            background: #312e81;
+            color: #a5b4fc;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .badge-red {
+            display: inline-block;
+            background: #4c0519;
+            color: #fda4af;
+            padding: 2px 10px;
+            border-radius: 9999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .streak-fire { color: #f59e0b; font-weight: 700; }
+
+        .export-btn {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #1f2937;
+            color: #9ca3af;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .export-btn:hover {
+            background: #374151;
+            color: #f9fafb;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #4b5563;
+            padding: 36px 0;
+            font-size: 0.88rem;
+            font-style: italic;
+        }
+
+        /* ── Activity heatmap ── */
+        .heatmap-wrapper { overflow-x: auto; }
+
+        .heatmap-outer {
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+            min-width: max-content;
+        }
+
+        .heatmap-day-labels {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex-shrink: 0;
+            padding-top: 38px;
+        }
+
+        .year-group { display: flex; flex-direction: column; gap: 4px; }
+
+        .year-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #9ca3af;
+        }
+
+        .year-months { display: flex; gap: 20px; }
+        .heatmap-day-labels span {
+            height: 11px;
+            line-height: 11px;
+            font-size: 0.62rem;
+            color: #6b7280;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .heatmap-months-grid { display: flex; gap: 32px; }
+
+        .month-group { display: flex; flex-direction: column; gap: 4px; }
+
+        .month-label {
+            font-size: 0.7rem;
+            color: #6b7280;
+            height: 14px;
+            line-height: 14px;
+            text-align: center;
+        }
+
+        .month-weeks { display: flex; gap: 2px; }
+
+        .heatmap-col { display: flex; flex-direction: column; gap: 2px; }
+
+        .heatmap-cell {
+            width: 11px;
+            height: 11px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .heatmap-cell:hover { outline: 1px solid rgba(255,255,255,0.35); }
+
+        .heatmap-legend {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+        .legend-label { font-size: 0.7rem; color: #6b7280; margin: 0 2px; }
+
+        .heatmap-tooltip {
+            position: fixed;
+            display: none;
+            background: #1f2937;
+            color: #f9fafb;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            pointer-events: none;
+            z-index: 999;
+            white-space: nowrap;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <span>🎵</span>
+        <h1>Bot Stats Dashboard</h1>
+        <a class="export-btn" href="/export">⬇ Export CSV</a>
+    </header>
+
+    <!-- ════════ OVERVIEW ════════ -->
+    <div class="section-title">Overview</div>
+    <div class="metrics">
+        <div class="card card-blue">
+            <div class="card-label">Total Play Time</div>
+            <div class="card-value">{{ total_time }}</div>
+        </div>
+        <div class="card card-green">
+            <div class="card-label">Total Plays</div>
+            <div class="card-value">{{ total_plays }}</div>
+        </div>
+        <div class="card card-amber">
+            <div class="card-label">Unique Songs</div>
+            <div class="card-value">{{ unique_songs }}</div>
+        </div>
+        <div class="card card-cyan">
+            <div class="card-label">Active Days</div>
+            <div class="card-value">{{ active_days }}</div>
+        </div>
+    </div>
+
+    <!-- ════════ SONGS ════════ -->
+    <div class="section-title">Songs</div>
+    <div class="row-two">
+        <div class="chart-card">
+            <div class="chart-title">🏆 Top Songs by Plays</div>
+            <div class="canvas-wrap-h">
+                <canvas id="songsChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">⏭ Most Skipped</div>
+            {% if top_skipped %}
+            <table>
+                <thead>
+                    <tr><th>#</th><th>Song</th><th>Skips</th></tr>
+                </thead>
+                <tbody>
+                    {% for s in top_skipped %}
+                    <tr>
+                        <td class="rank">{{ loop.index }}</td>
+                        <td class="song-name">{{ s.song }}</td>
+                        <td><span class="badge-red">{{ s.count }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">No skips recorded yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ════════ USERS ════════ -->
+    <div class="section-title">Users</div>
+    <div class="row-two">
+        <div class="chart-card">
+            <div class="chart-title">👤 User Activity</div>
+            <div class="canvas-wrap-v">
+                <canvas id="usersChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">🔥 Streaks</div>
+            {% if user_streaks %}
+            <table>
+                <thead>
+                    <tr><th>User</th><th>Current</th><th>Peak</th><th>Skipped</th></tr>
+                </thead>
+                <tbody>
+                    {% for u in user_streaks %}
+                    <tr>
+                        <td class="song-name">{{ u.username }}</td>
+                        <td class="streak-fire">{{ u.current_streak }}d</td>
+                        <td>{{ u.peak_streak }}d</td>
+                        <td>{{ u.songs_skipped }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">No user data yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ════════ SESSIONS ════════ -->
+    <div class="section-title">Sessions</div>
+    <div class="row-two">
+        <div class="chart-card">
+            <div class="chart-title">📅 Activity</div>
+            <div class="heatmap-wrapper">
+                <div class="heatmap-outer">
+                    <div class="heatmap-day-labels">
+                        <span>Mon</span>
+                        <span>Tue</span>
+                        <span>Wed</span>
+                        <span>Thu</span>
+                        <span>Fri</span>
+                        <span>Sat</span>
+                        <span>Sun</span>
+                    </div>
+                    <div class="heatmap-months-grid" id="heatmap-grid"></div>
+                </div>
+                <div class="heatmap-legend">
+                    <span class="legend-label">Less</span>
+                    <div class="heatmap-cell" style="background:#1a2332"></div>
+                    <div class="heatmap-cell" style="background:#0e4429"></div>
+                    <div class="heatmap-cell" style="background:#006d32"></div>
+                    <div class="heatmap-cell" style="background:#26a641"></div>
+                    <div class="heatmap-cell" style="background:#39d353"></div>
+                    <span class="legend-label">More</span>
+                </div>
+            </div>
+            <div id="heatmap-tooltip" class="heatmap-tooltip"></div>
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">🕐 Recent Sessions</div>
+            {% if sessions %}
+            <table>
+                <thead>
+                    <tr><th>Date</th><th>Duration</th><th>Songs</th><th>Users</th></tr>
+                </thead>
+                <tbody>
+                    {% for s in sessions %}
+                    <tr>
+                        <td class="song-name">{{ s.date }}</td>
+                        <td>{{ s.duration }}</td>
+                        <td><span class="badge">{{ s.songs }}</span></td>
+                        <td>{{ s.users }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">No sessions recorded yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ════════ REQUESTS ════════ -->
+    <div class="section-title">Song Requests</div>
+    <div class="chart-card">
+        {% if requests %}
+        <table>
+            <thead>
+                <tr><th>#</th><th>Song</th><th>Requested By</th><th>Times</th></tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td class="rank">{{ loop.index }}</td>
+                    <td class="song-name">{{ req.song }}</td>
+                    <td>{{ req.user }}</td>
+                    <td><span class="badge">{{ req.count }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">No song requests recorded yet.</div>
+        {% endif %}
+    </div>
+
+    <script>
+        const TOOLTIP = {
+            backgroundColor : '#1f2937',
+            titleColor      : '#f9fafb',
+            bodyColor       : '#9ca3af',
+            borderColor     : '#374151',
+            borderWidth     : 1,
+            padding         : 10,
+        };
+
+        const TICK_STYLE = { color: '#6b7280', font: { size: 11 } };
+
+        // ── Top Songs — horizontal bar ──
+        new Chart(document.getElementById('songsChart'), {
+            type: 'bar',
+            data: {
+                labels  : {{ songs_labels | safe }},
+                datasets: [{
+                    data            : {{ songs_data | safe }},
+                    backgroundColor : 'rgba(99, 102, 241, 0.7)',
+                    borderColor     : 'rgba(99, 102, 241, 1)',
+                    borderWidth     : 1,
+                    borderRadius    : 4,
+                }]
+            },
+            options: {
+                indexAxis           : 'y',
+                maintainAspectRatio : false,
+                plugins: { legend: { display: false }, tooltip: TOOLTIP },
+                scales: {
+                    x: { ticks: { ...TICK_STYLE, stepSize: 1 }, grid: { color: '#374151' } },
+                    y: { ticks: TICK_STYLE, grid: { color: '#1f2937' } }
+                }
+            }
+        });
+
+        // ── User Activity — vertical bar + datalabels ──
+        const usersTimeLabels = {{ users_time_labels | safe }};
+
+        new Chart(document.getElementById('usersChart'), {
+            type: 'bar',
+            data: {
+                labels  : {{ users_labels | safe }},
+                datasets: [{
+                    data            : {{ users_songs_data | safe }},
+                    backgroundColor : 'rgba(16, 185, 129, 0.7)',
+                    borderColor     : 'rgba(16, 185, 129, 1)',
+                    borderWidth     : 1,
+                    borderRadius    : 4,
+                }]
+            },
+            options: {
+                maintainAspectRatio : false,
+                plugins: {
+                    legend     : { display: false },
+                    tooltip    : TOOLTIP,
+                    datalabels : {
+                        anchor    : 'end',
+                        align     : 'top',
+                        offset    : 2,
+                        clamp     : true,
+                        color     : '#9ca3af',
+                        font      : { size: 10, weight: '600' },
+                        formatter : (_, ctx) => usersTimeLabels[ctx.dataIndex],
+                    },
+                },
+                layout : { padding: { top: 20 } },
+                scales: {
+                    x : { ticks: TICK_STYLE, grid: { color: '#1f2937' } },
+                    y : { ticks: { ...TICK_STYLE, stepSize: 1 }, grid: { color: '#374151' } },
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+        // ── Activity heatmap ──
+        (function() {
+            const data      = {{ activity_data | safe }};
+            const globalMax = Math.max({{ activity_max }}, 1);
+            const MONTHS    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+            function cellColor(count) {
+                if (!count) return '#1a2332';
+                const r = count / globalMax;
+                if (r <= 0.25) return '#0e4429';
+                if (r <= 0.50) return '#006d32';
+                if (r <= 0.75) return '#26a641';
+                return '#39d353';
+            }
+
+            function capitalize(s) {
+                return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+            }
+
+            function toISO(d) {
+                return d.getFullYear() + '-' +
+                    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(d.getDate()).padStart(2, '0');
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const gridEl  = document.getElementById('heatmap-grid');
+            const tooltip = document.getElementById('heatmap-tooltip');
+
+            function buildMonthGroup(year, month) {
+                const days = [];
+                const d = new Date(year, month, 1);
+                while (d.getMonth() === month && d <= today) {
+                    days.push(new Date(d));
+                    d.setDate(d.getDate() + 1);
+                }
+
+                const firstDayIdx = (days[0].getDay() + 6) % 7;
+                const weekArrays  = [];
+                let week = Array(firstDayIdx).fill(null);
+                for (const day of days) {
+                    week.push(day);
+                    if (week.length === 7) { weekArrays.push(week); week = []; }
+                }
+                if (week.length > 0) {
+                    while (week.length < 7) week.push(null);
+                    weekArrays.push(week);
+                }
+
+                const group = document.createElement('div');
+                group.className = 'month-group';
+
+                const label = document.createElement('div');
+                label.className = 'month-label';
+                label.textContent = MONTHS[month];
+                group.appendChild(label);
+
+                const weeksDiv = document.createElement('div');
+                weeksDiv.className = 'month-weeks';
+
+                weekArrays.forEach(wk => {
+                    const col = document.createElement('div');
+                    col.className = 'heatmap-col';
+                    wk.forEach(day => {
+                        const cell = document.createElement('div');
+                        cell.className = 'heatmap-cell';
+                        if (!day) {
+                            cell.style.background    = 'transparent';
+                            cell.style.pointerEvents = 'none';
+                        } else {
+                            const iso   = toISO(day);
+                            const entry = data[iso];
+                            const count = entry ? entry.count : 0;
+                            cell.style.background = cellColor(count);
+                            cell.addEventListener('mouseenter', function(e) {
+                                const names = entry ? entry.users.map(capitalize).join(', ') : '';
+                                tooltip.innerHTML = count
+                                    ? `<b>${iso}</b><br>${names}`
+                                    : `<b>${iso}</b><br>No activity`;
+                                tooltip.style.display = 'block';
+                                tooltip.style.left = (e.clientX + 14) + 'px';
+                                tooltip.style.top  = (e.clientY - 48) + 'px';
+                            });
+                            cell.addEventListener('mousemove', function(e) {
+                                tooltip.style.left = (e.clientX + 14) + 'px';
+                                tooltip.style.top  = (e.clientY - 48) + 'px';
+                            });
+                            cell.addEventListener('mouseleave', () => tooltip.style.display = 'none');
+                        }
+                        col.appendChild(cell);
+                    });
+                    weeksDiv.appendChild(col);
+                });
+
+                group.appendChild(weeksDiv);
+                return group;
+            }
+
+            // Collect months grouped by year
+            const byYear = {};
+            let m = new Date(today.getFullYear(), today.getMonth() - 11, 1);
+            while (m <= today) {
+                const y = m.getFullYear();
+                const mo = m.getMonth();
+                if (!byYear[y]) byYear[y] = [];
+                byYear[y].push(mo);
+                m.setMonth(m.getMonth() + 1);
+            }
+
+            // Render one year-group per year
+            for (const [year, months] of Object.entries(byYear)) {
+                const yearGroup = document.createElement('div');
+                yearGroup.className = 'year-group';
+
+                const yearLabel = document.createElement('div');
+                yearLabel.className = 'year-label';
+                yearLabel.textContent = year;
+                yearGroup.appendChild(yearLabel);
+
+                const yearMonths = document.createElement('div');
+                yearMonths.className = 'year-months';
+                months.forEach(mo => yearMonths.appendChild(buildMonthGroup(Number(year), mo)));
+
+                yearGroup.appendChild(yearMonths);
+                gridEl.appendChild(yearGroup);
+            }
+        })();
+    </script>
+
+</body>
+</html>

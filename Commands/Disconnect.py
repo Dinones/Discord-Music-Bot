@@ -19,6 +19,7 @@ from Utils import Colored_Strings as STR
 from Utils.Reactions import send_reaction
 from Commands.Clear import clear as clear_queue
 from Utils.Music_Manager import get_music_manager
+from Utils.Database import record_session_end
 
 try:
     from Utils import Custom_Messages as MSG
@@ -100,8 +101,14 @@ def register_disconnect_command(bot: commands.Bot) -> None:
         # Reset all queue states before disconnecting the bot from voice.
         await clear_queue(context, send_feedback = False)
 
+        music_manager = get_music_manager()
+        record_session_end(music_manager.session_start, music_manager.session_songs, music_manager.session_users)
+
         await context.voice_client.disconnect()
-        get_music_manager().intro_played = False
+        music_manager.intro_played    = False
+        music_manager.session_start   = None
+        music_manager.session_songs   = 0
+        music_manager.session_users   = set()
         print(
             STR.G_ACTION_DONE.format(
                 user   = context.author.name.capitalize(),

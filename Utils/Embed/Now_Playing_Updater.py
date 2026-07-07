@@ -19,6 +19,7 @@ from discord.ext import commands
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
 
 from Utils.Song import Song_Item
+from Utils.Database import record_song_skipped
 from Utils.Embed.Now_Playing import build_now_playing_embed
 from Utils.Lyrics import get_current_lyric_line
 
@@ -137,6 +138,10 @@ class Now_Playing_View(discord.ui.View):
 
         vc = self._voice_client
         if vc.is_playing() or vc.is_paused():
+            current_song = self._music_manager.current_song
+            if current_song:
+                url = str(current_song.get("spotify_url") or current_song.get("playback_query") or "").strip()
+                record_song_skipped(url, interaction.user.name)
             vc.stop()
 
     ###########################################################################################################################

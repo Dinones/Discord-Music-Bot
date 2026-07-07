@@ -18,6 +18,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Utils import Colored_Strings as STR
 from Utils.Reactions import send_reaction
 from Utils.Music_Manager import get_music_manager
+from Utils.Database import record_song_skipped
 from Utils.Embed.Queue import _MAX_SONGS
 
 from Commands.Connect import connect as connect_to_voice_channel
@@ -77,6 +78,11 @@ async def skip(context: commands.Context, count: str = "") -> None:
     # Drop skip_count-1 upcoming songs; stopping the current song counts as the first skip
     if skip_count > 1:
         await get_music_manager().drop_songs(skip_count - 1)
+
+    current_song = get_music_manager().current_song
+    if current_song:
+        url = str(current_song.get("spotify_url") or current_song.get("playback_query") or "").strip()
+        record_song_skipped(url, context.author.name)
 
     voice_client.stop()
 

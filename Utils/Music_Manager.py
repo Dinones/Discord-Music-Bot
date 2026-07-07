@@ -11,6 +11,7 @@ import sys
 import random
 import asyncio
 import discord
+from datetime import datetime
 from collections import deque
 from discord.ext import commands
 from typing import Any, Deque, Dict, List, Optional, Set, Tuple
@@ -27,6 +28,7 @@ from Utils import Colored_Strings as STR
 from Utils.Constants import GENRE_FILTERS
 from Utils.Logs import save_exception_to_txt
 from Utils.Audio_Intro import play_intro_audio
+from Utils.Database import record_bot_joined, record_session_end, record_song_played
 from Utils.Youtube import configure_ytdl, get_audio_player
 from Utils.Song import Song_Item, resolve_song_stream_url, enrich_song_from_video
 from Utils.Lyrics import fetch_lyrics, fetch_youtube_captions, calculate_lyric_sync_offset
@@ -57,6 +59,10 @@ class Music_Manager():
         self.intro_played       : bool                          = False
         self.alone_timeout_task : Optional[asyncio.Task]        = None
         self.last_text_channel  : Optional[discord.TextChannel] = None
+
+        self.session_start : Optional[str] = None
+        self.session_songs : int           = 0
+        self.session_users : Set[str]      = set()
 
         # When using threading.Lock() with async functions, "return await ..." doesn't release the lock
         self.queues_lock = asyncio.Lock()
@@ -517,7 +523,7 @@ async def _play_song_to_completion(
     seek_offset  : int = 0,
     lyrics_task  : Optional[asyncio.Task] = None,
     view         : Optional[Now_Playing_View] = None
-) -> None:
+) -> int:
 
     """
     Start audio playback for a single song and block until it finishes. Creates the progress-bar updater, wires the
@@ -535,7 +541,7 @@ async def _play_song_to_completion(
             initialises at the correct position (default 0).
 
     Returns:
-        None
+        int: Seconds of audio actively played (wall time minus pauses, capped at song duration).
     """
 
     song_finished_event = asyncio.Event()
@@ -583,6 +589,12 @@ async def _play_song_to_completion(
     await updater.stop()
     get_music_manager().current_updater = None
 
+    loop           = asyncio.get_running_loop()
+    duration       = int(song.get("duration") or 0)
+    played_seconds = int(max(0, loop.time() - play_start_time - updater._paused_acc + seek_offset))
+    if duration > 0:
+        played_seconds = min(played_seconds, duration)
+
     # Remove the now-playing embed so the channel stays clean before the next song's embed is posted
     try:
         await message.delete()
@@ -595,6 +607,8 @@ async def _play_song_to_completion(
                 reason = error
             )
         )
+
+    return played_seconds
 
 ###########################################################################################################################
 ###########################################################################################################################
@@ -749,8 +763,12 @@ async def process_global_queue(context: commands.Context) -> None:
         player, seek_offset = player_result
 
         if not music_manager.intro_played:
-            music_manager.intro_played = True
+            music_manager.intro_played    = True
+            music_manager.session_start   = datetime.now().isoformat(timespec='seconds')
+            music_manager.session_songs   = 0
+            music_manager.session_users   = set()
             if voice_client and voice_client.is_connected():
+                record_bot_joined()
                 await play_intro_audio(voice_client)
 
         lyrics_task = asyncio.create_task(_fetch_lyrics_with_sync(
@@ -772,7 +790,7 @@ async def process_global_queue(context: commands.Context) -> None:
         next_song     = await music_manager.peek_next_song()
         prefetch_task = asyncio.create_task(resolve_song_stream_url(context, next_song)) if next_song else None
 
-        await _play_song_to_completion(
+        played_seconds = await _play_song_to_completion(
             voice_client,
             player,
             song,
@@ -782,6 +800,11 @@ async def process_global_queue(context: commands.Context) -> None:
             lyrics_task = lyrics_task,
             view = view
         )
+
+        users_in_vc = [m.name for m in voice_client.channel.members if not m.bot]
+        record_song_played(song, played_seconds, users_in_vc)
+        music_manager.session_songs += 1
+        music_manager.session_users.update(users_in_vc)
 
         prefetched = await _collect_prefetch(prefetch_task, next_song)
 

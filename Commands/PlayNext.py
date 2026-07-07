@@ -91,6 +91,7 @@ async def playnext(context: commands.Context, args: str, priority_front: bool = 
         )
 
     else:
+        songs_to_queue[0]["explicitly_requested"] = True
         # priority_front = True inserts before all other priority songs; False appends to the end
         if priority_front:
             priority_size = await music_manager.push_priority_song_front(songs_to_queue[0])

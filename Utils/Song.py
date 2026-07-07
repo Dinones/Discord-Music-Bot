@@ -44,7 +44,10 @@ class Song_Item(TypedDict, total = False):
     spotify_url      : str
 
     # Playback control fields
-    seek_offset      : int
+    seek_offset          : int
+
+    # Stats tracking fields
+    explicitly_requested : bool
 
 ###########################################################################################################################
 ###########################################################################################################################
