@@ -44,6 +44,12 @@ playwright install-deps chromium
 
 <br>
 
+## 🤖ㅤDiscord App Setup
+
+Create the Discord application, configure the bot token/intents, and install it into your server using [`Documentation/Discord_Bot_Setup.md`](Documentation/Discord_Bot_Setup.md).
+
+<br>
+
 ## ☁️ㅤAWS Setup
 
 The bot reads its secrets (Discord token, Spotify credentials, etc.) from AWS Secrets Manager. Follow the steps in [`Documentation/Cloud_Setup.md`](Documentation/Cloud_Setup.md) to provision the required AWS resources and fill the secret values.
