@@ -1,4 +1,10 @@
-# 🍪 Download Local Youtube Cookies
+## 📋ㅤTable of Contents
+
+- [🍪ㅤDownload Local Youtube Cookies](#download-local-youtube-cookies)
+
+<br><br>
+
+# 🍪ㅤDownload Local Youtube Cookies
 
 Downloading session Youtube cookies from your browser allows the app to authenticate, bypass bot detection, and access age-restricted videos. However, cookies must be refreshed periodically.
 
