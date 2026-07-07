@@ -26,18 +26,19 @@ _EMBED_COLOR = discord.Color.from_rgb(195, 0, 0)
 
 _SECTIONS = [
     (
-        "🎵  Playing Music",
+        "🎵⠀Playing Music",
         (
             "`!play <url | title>`        ⠀Queue a YouTube or Spotify song / playlist\n"
             "`!playmix <url | title>`     ⠀Queue songs and shuffle before playing\n"
             "`!playnext <url | title>`    ⠀Add to priority queue (plays after current song)\n"
             "`!playnow <url | title>`     ⠀Interrupt and play immediately\n"
             "`!play_reverse <url | title>`⠀Queue a playlist in reverse order\n"
+            "`!download <url | title>`    ⠀Download a song as an MP3 file\n"
             "`!playlists`                 ⠀Show the saved playlist panel\n⠀"
         ),
     ),
     (
-        "📋  Queue",
+        "📋⠀Queue",
         (
             "`!queue`   ⠀Show the current queue\n"
             "`!shuffle` ⠀Shuffle the queue\n"
@@ -47,21 +48,23 @@ _SECTIONS = [
         ),
     ),
     (
-        "⏯️  Playback",
+        "⏯️⠀Playback",
         (
             "`!pause`                 ⠀Pause playback\n"
             "`!resume`                ⠀Resume playback\n"
             "`!seek <MM:SS | seconds>`⠀Jump to a specific position\n"
             "`!rewind <seconds>`      ⠀Rewind by N seconds\n"
+            "`!lyrics`                ⠀Show current lyrics with context\n"
             "`!volume [0-100]`        ⠀View or set volume  (default: 50)\n⠀"
         ),
     ),
     (
-        "🔧  Other",
+        "🔧⠀Other",
         (
             "`!connect`   ⠀Connect to your voice channel\n"
             "`!disconnect`⠀Disconnect from voice channel\n"
             "`!filter`    ⠀Toggle genre filters\n"
+            "`!stats`     ⠀Show the bot stats dashboard\n"
             "`!ping`      ⠀Check bot latency"
         ),
     ),
