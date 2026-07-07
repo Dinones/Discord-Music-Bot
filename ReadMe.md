@@ -20,9 +20,9 @@ pip install -r Requirements.txt
 
 <br>
 
-## 🎞️ㅤFFmpeg Installation
+## 🎞️ㅤFFmpeg and Playwright Installation
 
-This bot requires `ffmpeg` to play audio.
+This bot requires `ffmpeg` to play audio and `playwright` to visualize stats.
 
 ### 🪟ㅤWindows Environment
 
