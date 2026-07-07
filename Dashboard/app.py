@@ -35,10 +35,13 @@ _SKIP_LIMIT    = 7
 
 def _format_duration(seconds: int) -> str:
 
-    h = seconds // 3600
+    d = seconds // 86400
+    h = (seconds % 86400) // 3600
     m = (seconds % 3600) // 60
     s = seconds % 60
 
+    if d:
+        return f"{d}d {h}h {m}m"
     if h:
         return f"{h}h {m}m"
     if m:
@@ -106,23 +109,37 @@ def _load_stats() -> dict:
         ).fetchall()
 
         user_streaks = conn.execute(
-            "SELECT username, current_streak, peak_streak, songs_skipped FROM users ORDER BY peak_streak DESC LIMIT ?",
-            (_TOP_LIMIT,)
-        ).fetchall()
-
-        top_requests = conn.execute(
             """
-            SELECT s.name, sr.username, sr.request_count
-            FROM song_requests sr
-            JOIN songs s ON s.url = sr.url
-            ORDER BY sr.request_count DESC
+            SELECT u.username, u.current_streak, u.peak_streak, u.songs_skipped,
+                   COALESCE(SUM(sr.request_count), 0) AS songs_requested
+            FROM users u
+            LEFT JOIN song_requests sr ON sr.username = u.username
+            GROUP BY u.username
+            ORDER BY u.peak_streak DESC
             LIMIT ?
             """,
             (_TOP_LIMIT,)
         ).fetchall()
 
+        _raw_requests = conn.execute(
+            """
+            SELECT s.name, sr.username, sr.request_count
+            FROM song_requests sr
+            JOIN songs s ON s.url = sr.url
+            ORDER BY sr.request_count DESC
+            """
+        ).fetchall()
+        _req_by_song: dict = {}
+        for _r in _raw_requests:
+            _name = _r["name"] or "Unknown"
+            if _name not in _req_by_song:
+                _req_by_song[_name] = {"name": _name, "total": 0, "users": []}
+            _req_by_song[_name]["total"] += _r["request_count"]
+            _req_by_song[_name]["users"].append({"user": _r["username"], "count": _r["request_count"]})
+        top_requests = sorted(_req_by_song.values(), key=lambda x: x["total"], reverse=True)[:_TOP_LIMIT]
+
         recent_sessions = conn.execute(
-            "SELECT start_date, end_date, songs_played, unique_users FROM sessions ORDER BY start_date DESC LIMIT ?",
+            "SELECT start_date, end_date, songs_played, unique_users, user_list FROM sessions ORDER BY start_date DESC LIMIT ?",
             (_SESSION_LIMIT,)
         ).fetchall()
 
@@ -179,13 +196,15 @@ def _load_stats() -> dict:
         # Users
         "users_labels"      : json.dumps([r["username"].capitalize() for r in top_users]),
         "users_songs_data"  : json.dumps([r["songs_listened"] for r in top_users]),
+        "users_time_data"   : json.dumps([r["seconds_listened"] for r in top_users]),
         "users_time_labels" : json.dumps([_format_duration(r["seconds_listened"]) for r in top_users]),
         "user_streaks"      : [
             {
-                "username"       : r["username"].capitalize(),
-                "current_streak" : r["current_streak"],
-                "peak_streak"    : r["peak_streak"],
-                "songs_skipped"  : r["songs_skipped"],
+                "username"        : r["username"].capitalize(),
+                "current_streak"  : r["current_streak"],
+                "peak_streak"     : r["peak_streak"],
+                "songs_requested" : r["songs_requested"],
+                "songs_skipped"   : r["songs_skipped"],
             }
             for r in user_streaks
         ],
@@ -193,10 +212,11 @@ def _load_stats() -> dict:
         # Sessions
         "sessions"          : [
             {
-                "date"     : r["start_date"][:10],
-                "duration" : _session_duration(r["start_date"], r["end_date"]),
-                "songs"    : r["songs_played"],
-                "users"    : r["unique_users"],
+                "date"      : r["start_date"][:10],
+                "duration"  : _session_duration(r["start_date"], r["end_date"]),
+                "songs"     : r["songs_played"],
+                "users"     : r["unique_users"],
+                "user_list" : json.loads(r["user_list"] or "[]") if r["user_list"] else [],
             }
             for r in recent_sessions
         ],
@@ -206,9 +226,9 @@ def _load_stats() -> dict:
         # Requests
         "requests"          : [
             {
-                "song"  : _truncate(_cap(r["name"] or "Unknown"), 55),
-                "user"  : r["username"].capitalize(),
-                "count" : r["request_count"]
+                "song"  : _truncate(_cap(r["name"]), 55),
+                "total" : r["total"],
+                "users" : [{"user": u["user"].capitalize(), "count": u["count"]} for u in r["users"]],
             }
             for r in top_requests
         ],

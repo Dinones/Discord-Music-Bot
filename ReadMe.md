@@ -30,6 +30,7 @@ Run a powershell as administrator and run:
 
 ```powershell
 choco install ffmpeg -y
+playwright install chromium
 ```
 
 ### 🐧ㅤLinux Environment
@@ -37,6 +38,8 @@ choco install ffmpeg -y
 ```bash
 sudo apt-get update
 sudo apt-get install -y ffmpeg
+playwright install chromium
+playwright install-deps chromium
 ```
 
 <br>

@@ -52,6 +52,7 @@ DOWNLOAD_SPOTIFY_NOT_SUPPORTED  = 'Spotify URLs are not supported for download. 
 DOWNLOAD_FAILED                 = 'Could not download the song.'
 DOWNLOAD_FILE_TOO_LARGE         = 'The file is too large to send (**{size} MB**). Discord limit is **{limit} MB**.'
 NO_PLAYLISTS_CONFIGURED = 'No playlists have been configured.'
+STATS_GENERATION_FAILED = 'Could not generate the stats image.'
 PLAYLISTS_PANEL         = 'Select a playlist:'
 
 ###########################################################################################################################

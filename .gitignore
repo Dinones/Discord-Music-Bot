@@ -17,6 +17,7 @@ crash.log
 .venv
 __pycache__
 Logs/*
+Data/*
 *.csv
 *.mp3
 *.webm
