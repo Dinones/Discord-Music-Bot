@@ -95,12 +95,13 @@ async def seek(context: commands.Context, args: str) -> None:
     song_copy["seek_offset"] = seek_to
 
     await send_reaction(context.message, "⏳")
-    await music_manager.prepare_seek_player(seek_to)
-    await music_manager.prepare_rewind_playback(song_copy)
+    async with context.typing():
+        await music_manager.prepare_seek_player(seek_to)
+        await music_manager.prepare_rewind_playback(song_copy)
 
-    # Stopping fires _after_playing → song_finished_event → the queue worker advances and
-    # picks up the seek copy from the priority queue (pre-warmed player is ready immediately)
-    voice_client.stop()
+        # Stopping fires _after_playing → song_finished_event → the queue worker advances and
+        # picks up the seek copy from the priority queue (pre-warmed player is ready immediately)
+        voice_client.stop()
 
     await context.message.remove_reaction("⏳", context.bot.user)
     print(

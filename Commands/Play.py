@@ -109,7 +109,8 @@ async def play(context: commands.Context, args: str, shuffle: bool = False, reve
     # Show loading indicator while the API call resolves the song
     await send_reaction(context.message, "⏳")
 
-    songs_to_queue = await resolve_play_request(context, args)
+    async with context.typing():
+        songs_to_queue = await resolve_play_request(context, args)
     if not songs_to_queue:
         await send_reaction(context.message, "❌")
         await remove_reaction(context.message, "⏳", context.bot.user)

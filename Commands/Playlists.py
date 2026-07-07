@@ -83,6 +83,9 @@ class _Interaction_Context:
     async def send(self, *args: Any, **kwargs: Any) -> discord.Message | None:
         return await self.channel.send(*args, **kwargs)
 
+    def typing(self) -> Any:
+        return self.channel.typing()
+
 ###########################################################################################################################
 ###########################################################################################################################
 

@@ -68,7 +68,8 @@ async def download(context: commands.Context, args: str) -> None:
 
     with tempfile.TemporaryDirectory() as tmpdir:
 
-        result = await download_mp3(music_manager, context.message, args, tmpdir)
+        async with context.typing():
+            result = await download_mp3(music_manager, context.message, args, tmpdir)
 
         if not result:
             await send_reaction(context.message, "❌")
