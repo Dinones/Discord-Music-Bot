@@ -149,11 +149,13 @@ class Test_Register_Seek_Command(unittest.IsolatedAsyncioTestCase):
             stop       = Mock()
         )
 
-        context             = Mock(send = AsyncMock())
-        context.author      = Mock()
-        context.author.name = CONST.TESTING_AUTHOR_NAME
-        context.guild       = Mock(voice_client = voice_client)
+        context              = Mock(send = AsyncMock())
+        context.author       = Mock()
+        context.author.name  = CONST.TESTING_AUTHOR_NAME
+        context.guild        = Mock(voice_client = voice_client)
         context.voice_client = voice_client
+        context.message      = Mock(add_reaction = AsyncMock(), remove_reaction = AsyncMock())
+        context.typing       = Mock(return_value = AsyncMock())
 
         return context
 
@@ -165,6 +167,7 @@ class Test_Register_Seek_Command(unittest.IsolatedAsyncioTestCase):
         manager                          = Mock()
         manager.current_song             = {"title": "Test Song", "duration": duration}
         manager.current_updater          = Mock()
+        manager.prepare_seek_player      = AsyncMock()
         manager.prepare_rewind_playback  = AsyncMock()
 
         return manager
@@ -369,6 +372,63 @@ class Test_Register_Seek_Command(unittest.IsolatedAsyncioTestCase):
             await self.seek_command(context, args = "45")
 
         context.guild.voice_client.stop.assert_called_once()
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_seek_calls_prepare_seek_player_with_correct_offset(self) -> None:
+
+        context = self._build_context()
+        manager = self._build_music_manager()
+
+        with (
+            patch("Commands.Seek.connect_to_voice_channel", new = AsyncMock(return_value = True)),
+            patch("Commands.Seek.get_music_manager", return_value = manager),
+            patch("Commands.Seek.print")
+        ):
+            await self.seek_command(context, args = "90")
+
+        manager.prepare_seek_player.assert_called_once_with(90)
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_seek_calls_prepare_seek_player_with_clamped_offset_when_exceeding_duration(self) -> None:
+
+        context = self._build_context()
+        manager = self._build_music_manager(duration = 120)
+
+        with (
+            patch("Commands.Seek.connect_to_voice_channel", new = AsyncMock(return_value = True)),
+            patch("Commands.Seek.get_music_manager", return_value = manager),
+            patch("Commands.Seek.print")
+        ):
+            await self.seek_command(context, args = "999")
+
+        manager.prepare_seek_player.assert_called_once_with(120)
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_seek_does_not_call_prepare_seek_player_when_not_playing(self) -> None:
+
+        context = self._build_context(is_playing = False, is_paused = False)
+
+        with (
+            patch("Commands.Seek.connect_to_voice_channel", new = AsyncMock(return_value = True)),
+            patch("Commands.Seek.get_music_manager", return_value = self._build_music_manager()),
+            patch("Commands.Seek.print")
+        ):
+            await self.seek_command(context, args = "60")
+
+        self.assertEqual(
+            context.send.call_count,
+            1,
+            _color_error_message_in_red(
+                'seek() should not call prepare_seek_player() when the bot is not playing — '
+                'it should bail out early with an error message.'
+            )
+        )
 
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################

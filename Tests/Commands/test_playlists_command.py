@@ -378,6 +378,45 @@ class Test_Playlists_Command(unittest.IsolatedAsyncioTestCase):
             )
         )
 
+    #######################################################################################################################
+    #######################################################################################################################
+
+    def test_interaction_context_has_typing_method(self) -> None:
+
+        interaction = self._build_interaction()
+        ctx         = Commands.Playlists._Interaction_Context(interaction, Mock(), Mock())
+
+        self.assertTrue(
+            hasattr(ctx, "typing"),
+            _color_error_message_in_red(
+                '_Interaction_Context must have a typing() method so it can be used with '
+                '"async with context.typing():" inside commands like play().'
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    def test_interaction_context_typing_delegates_to_channel(self) -> None:
+
+        interaction          = self._build_interaction()
+        expected_typing_cm   = Mock()
+        interaction.channel.typing = Mock(return_value = expected_typing_cm)
+
+        ctx    = Commands.Playlists._Interaction_Context(interaction, Mock(), Mock())
+        result = ctx.typing()
+
+        interaction.channel.typing.assert_called_once()
+
+        self.assertIs(
+            result,
+            expected_typing_cm,
+            _color_error_message_in_red(
+                '_Interaction_Context.typing() should return whatever channel.typing() returns, '
+                'delegating the typing indicator to the underlying channel.'
+            )
+        )
+
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
 ###########################################################################################################################

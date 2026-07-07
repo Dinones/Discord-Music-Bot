@@ -82,6 +82,7 @@ class Test_Register_Download_Command(unittest.IsolatedAsyncioTestCase):
         context.bot.user             = Mock()
         context.guild                = Mock()
         context.guild.filesize_limit = filesize_limit
+        context.typing               = Mock(return_value = AsyncMock())
 
         return context
 

@@ -71,12 +71,15 @@ class Test_Play_Reverse_Command(unittest.IsolatedAsyncioTestCase):
         user      = Mock()
         user.name = "testuser"
 
-        return Mock(
+        context        = Mock(
             author  = user,
             send    = AsyncMock(),
             message = Mock(add_reaction = AsyncMock()),
             bot     = Mock(user = Mock(), loop = Mock(create_task = Mock()))
         )
+        context.typing = Mock(return_value = AsyncMock())
+
+        return context
 
     #######################################################################################################################
     #######################################################################################################################

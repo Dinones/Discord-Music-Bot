@@ -69,6 +69,7 @@ class Test_Register_PlayNext_Command(unittest.IsolatedAsyncioTestCase):
         )
 
         context.author.name = CONST.TESTING_AUTHOR_NAME
+        context.typing      = Mock(return_value = AsyncMock())
 
         return context
 

@@ -68,6 +68,8 @@ class Test_Register_Rewind_Command(unittest.IsolatedAsyncioTestCase):
         context.author.name  = CONST.TESTING_AUTHOR_NAME
         context.guild        = Mock(voice_client = voice_client)
         context.voice_client = voice_client
+        context.message      = Mock(add_reaction = AsyncMock(), remove_reaction = AsyncMock())
+        context.typing       = Mock(return_value = AsyncMock())
 
         return context
 
@@ -81,9 +83,10 @@ class Test_Register_Rewind_Command(unittest.IsolatedAsyncioTestCase):
         updater._paused_acc        = 0.0
         updater._seek_offset       = 0
 
-        manager                 = Mock()
-        manager.current_song    = current_song or {"title": "Test Song", "duration": 300}
-        manager.current_updater = updater
+        manager                         = Mock()
+        manager.current_song            = current_song or {"title": "Test Song", "duration": 300}
+        manager.current_updater         = updater
+        manager.prepare_seek_player     = AsyncMock()
         manager.prepare_rewind_playback = AsyncMock()
 
         return manager
@@ -317,6 +320,50 @@ class Test_Register_Rewind_Command(unittest.IsolatedAsyncioTestCase):
             1,
             _color_error_message_in_red(
                 'rewind() should work while paused, calling voice_client.stop() once.'
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_rewind_calls_prepare_seek_player_with_correct_offset(self) -> None:
+
+        context = self._build_context()
+        manager = self._build_music_manager()
+        # elapsed = loop.time(60) - start(0) - paused(0) + seek_offset(0) = 60s, rewind 20 → seek_to = 40
+        manager.current_updater._play_start_time = 0.0
+        manager.current_updater._paused_acc      = 0.0
+
+        with (
+            patch("Commands.Rewind.connect_to_voice_channel", new = AsyncMock(return_value = True)),
+            patch("Commands.Rewind.get_music_manager", return_value = manager),
+            patch("Commands.Rewind.asyncio.get_running_loop", return_value = Mock(time = Mock(return_value = 60.0))),
+            patch("Commands.Rewind.print")
+        ):
+            await self.rewind_command(context, args = "20")
+
+        manager.prepare_seek_player.assert_called_once_with(40)
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_rewind_does_not_call_prepare_seek_player_when_not_playing(self) -> None:
+
+        context = self._build_context(is_playing = False, is_paused = False)
+
+        with (
+            patch("Commands.Rewind.connect_to_voice_channel", new = AsyncMock(return_value = True)),
+            patch("Commands.Rewind.get_music_manager", return_value = self._build_music_manager()),
+            patch("Commands.Rewind.print")
+        ):
+            await self.rewind_command(context, args = "30")
+
+        self.assertEqual(
+            context.send.call_count,
+            1,
+            _color_error_message_in_red(
+                'rewind() should bail out early with an error message when not playing — '
+                'prepare_seek_player() must not be called.'
             )
         )
 

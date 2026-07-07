@@ -57,8 +57,11 @@ class Test_Play_Song_To_Completion(unittest.IsolatedAsyncioTestCase):
         message      = Mock(delete = AsyncMock())
         song         = {"title": "Test Song", "duration": 300}
         player       = Mock()
-        mock_updater = Mock(start = AsyncMock(), stop = AsyncMock())
         mock_manager = Mock()
+
+        mock_updater              = Mock(start = AsyncMock(), stop = AsyncMock())
+        mock_updater._paused_acc  = 0.0
+        mock_updater._seek_offset = 0
 
         return message, song, player, mock_updater, mock_manager
 
@@ -108,6 +111,60 @@ class Test_Play_Song_To_Completion(unittest.IsolatedAsyncioTestCase):
             1,
             _color_error_message_in_red(
                 '_play_song_to_completion() should call save_exception_to_txt() exactly once when delete() fails.'
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_player_read_is_called_when_not_already_warmed(self) -> None:
+
+        voice_client, loop                              = self._build_voice_client()
+        message, song, player, mock_updater, mock_manager = self._build_mocks()
+
+        with (
+            patch("Utils.Music_Manager.Now_Playing_Updater", return_value = mock_updater),
+            patch("Utils.Music_Manager.get_music_manager", return_value = mock_manager)
+        ):
+            await self._play_song_to_completion(
+                voice_client, player, song, message, loop, already_warmed = False
+            )
+
+        player.read.assert_called_once()
+
+        self.assertEqual(
+            player.read.call_count,
+            1,
+            _color_error_message_in_red(
+                '_play_song_to_completion() should call player.read() once via run_in_executor to pre-warm '
+                'the FFmpeg pipeline when already_warmed=False.'
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_player_read_is_not_called_when_already_warmed(self) -> None:
+
+        voice_client, loop                              = self._build_voice_client()
+        message, song, player, mock_updater, mock_manager = self._build_mocks()
+
+        with (
+            patch("Utils.Music_Manager.Now_Playing_Updater", return_value = mock_updater),
+            patch("Utils.Music_Manager.get_music_manager", return_value = mock_manager)
+        ):
+            await self._play_song_to_completion(
+                voice_client, player, song, message, loop, already_warmed = True
+            )
+
+        player.read.assert_not_called()
+
+        self.assertEqual(
+            player.read.call_count,
+            0,
+            _color_error_message_in_red(
+                '_play_song_to_completion() should skip player.read() when already_warmed=True '
+                'to avoid discarding audio frames that were already consumed during pre-warming.'
             )
         )
 
