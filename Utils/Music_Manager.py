@@ -64,6 +64,8 @@ class Music_Manager():
         self.session_songs : int           = 0
         self.session_users : Set[str]      = set()
 
+        self.prefetched_seek_player : Optional[Tuple[discord.PCMVolumeTransformer, int]] = None
+
         # When using threading.Lock() with async functions, "return await ..." doesn't release the lock
         self.queues_lock = asyncio.Lock()
 
@@ -286,6 +288,44 @@ class Music_Manager():
         async with self.queues_lock:
             self.priority_queue.appendleft(song)
             self.current_song = None
+
+###########################################################################################################################
+###########################################################################################################################
+
+    async def prepare_seek_player(self, seek_to: int) -> bool:
+
+        """
+        Pre-build and pre-warm an FFmpeg audio player for a seek/rewind operation while the
+        current song is still playing. Uses the raw stream URL cached on current_song so
+        yt-dlp is not called again. Stores the result in prefetched_seek_player so the queue
+        worker can consume it immediately after voice_client.stop(), eliminating the silence gap.
+
+        Args:
+            seek_to (int): Target position in seconds passed to FFmpeg as -ss.
+
+        Returns:
+            bool: True if a pre-warmed player was stored, False if the URL is unavailable or
+                player creation failed (queue worker falls back to normal resolution).
+        """
+
+        stream_url = (self.current_song or {}).get("_stream_url")
+        if not stream_url:
+            return False
+
+        loop = asyncio.get_running_loop()
+
+        def _build_and_warm() -> Optional[discord.PCMVolumeTransformer]:
+            p = get_audio_player(stream_url, start_offset = seek_to)
+            if p and p.read():
+                return p
+            return None
+
+        player = await loop.run_in_executor(None, _build_and_warm)
+        if player is None:
+            return False
+
+        self.prefetched_seek_player = (player, seek_to)
+        return True
 
 ###########################################################################################################################
 
@@ -515,14 +555,15 @@ async def _fetch_lyrics_with_sync(
 ###########################################################################################################################
 
 async def _play_song_to_completion(
-    voice_client : discord.VoiceClient,
-    player       : discord.AudioSource,
-    song         : Song_Item,
-    message      : discord.Message,
-    bot_loop     : asyncio.AbstractEventLoop,
-    seek_offset  : int = 0,
-    lyrics_task  : Optional[asyncio.Task] = None,
-    view         : Optional[Now_Playing_View] = None
+    voice_client   : discord.VoiceClient,
+    player         : discord.AudioSource,
+    song           : Song_Item,
+    message        : discord.Message,
+    bot_loop       : asyncio.AbstractEventLoop,
+    seek_offset    : int = 0,
+    lyrics_task    : Optional[asyncio.Task] = None,
+    view           : Optional[Now_Playing_View] = None,
+    already_warmed : bool = False,
 ) -> int:
 
     """
@@ -563,7 +604,8 @@ async def _play_song_to_completion(
     # stream-open latency (1-3 s) causes AudioPlayer's timing loop to fall behind schedule and then rapidly catch up,
     # perceived as slow-then-fast audio at the start of every song. The discarded frame is 20 ms of audio, which is
     # imperceptible.
-    await asyncio.get_running_loop().run_in_executor(None, player.read)
+    if not already_warmed:
+        await asyncio.get_running_loop().run_in_executor(None, player.read)
 
     voice_client.play(player, after = _after_playing)
     play_start_time = asyncio.get_running_loop().time()
@@ -663,6 +705,8 @@ def _build_player_for_song(
     if not stream_url:
         return None
 
+    song["_stream_url"] = stream_url
+
     # Consume seek_offset so it does not persist into played history for future !back replays
     seek_offset = int(song.pop("seek_offset", 0) or 0)
     player = get_audio_player(stream_url, start_offset = seek_offset)
@@ -752,15 +796,23 @@ async def process_global_queue(context: commands.Context) -> None:
             await music_manager.release_processing()
             break
 
-        resolved_video = await _resolve_stream(context, song, prefetched)
-        prefetched     = None
-        if not resolved_video:
-            continue
-
-        player_result = _build_player_for_song(song, resolved_video)
-        if not player_result:
-            continue
-        player, seek_offset = player_result
+        already_warmed  = False
+        prefetched_seek = music_manager.prefetched_seek_player
+        if prefetched_seek is not None:
+            music_manager.prefetched_seek_player = None
+            player, seek_offset = prefetched_seek
+            song.pop("seek_offset", None)
+            resolved_video = {}
+            already_warmed = True
+        else:
+            resolved_video = await _resolve_stream(context, song, prefetched)
+            prefetched     = None
+            if not resolved_video:
+                continue
+            player_result = _build_player_for_song(song, resolved_video)
+            if not player_result:
+                continue
+            player, seek_offset = player_result
 
         if not music_manager.intro_played:
             music_manager.intro_played    = True
@@ -796,9 +848,10 @@ async def process_global_queue(context: commands.Context) -> None:
             song,
             now_playing_msg,
             context.bot.loop,
-            seek_offset = seek_offset,
-            lyrics_task = lyrics_task,
-            view = view
+            seek_offset    = seek_offset,
+            lyrics_task    = lyrics_task,
+            view           = view,
+            already_warmed = already_warmed,
         )
 
         users_in_vc = [m.name for m in voice_client.channel.members if not m.bot]

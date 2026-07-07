@@ -107,12 +107,15 @@ async def rewind(context: commands.Context, args: str) -> None:
     song_copy               = dict(current_song)
     song_copy["seek_offset"] = seek_to
 
+    await send_reaction(context.message, "⏳")
+    await music_manager.prepare_seek_player(seek_to)
     await music_manager.prepare_rewind_playback(song_copy)
 
     # Stopping fires _after_playing → song_finished_event → the queue worker advances and
-    # picks up the rewind copy from the priority queue
+    # picks up the rewind copy from the priority queue (pre-warmed player is ready immediately)
     voice_client.stop()
 
+    await context.message.remove_reaction("⏳", context.bot.user)
     print(
         STR.G_ACTION_DONE.format(
             user   = context.author.name.capitalize(),
