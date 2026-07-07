@@ -1,3 +1,72 @@
+<h1 align="center">🎵ㅤDiscord Music Botㅤ🎵</h1>
+
+<p align="center">
+    Play YouTube and Spotify music in Discord with queue controls, synced lyrics, playlist buttons, and listening stats.
+</p>
+
+<p align="center">
+    <a href="#key-features">Key Features</a> •
+    <a href="#screenshots">Screenshots</a> •
+    <a href="#python-setup">Setup</a> •
+    <a href="Documentation/Discord_Bot_Setup.md">Discord App Setup</a> •
+    <a href="Documentation/Cloud_Setup.md">AWS Setup</a>
+</p>
+
+<br>
+
+<a id="key-features"></a>
+
+## ✨ㅤKey Features
+
+<p>
+    <p>
+        &emsp; 🎶ㅤPlay music from YouTube links, YouTube searches, Spotify tracks, Spotify albums, and Spotify playlists. <br>
+    </p><p>
+        &emsp; 📋ㅤManage playback with queue, priority queue, skip, back, pause, resume, and more controls. <br>
+    </p>
+    <p>
+        &emsp; 🎤ㅤShow synced lyrics while playing the music. <br>
+    </p>
+    <p>
+        &emsp; 📊ㅤTrack listening stats, user activity, skipped songs, sessions, streaks, and top requests. <br>
+    </p>
+    <p>
+        &emsp; ☁️ㅤLoad Discord, Spotify, YouTube cookies, and optional private commands from AWS. <br>
+    </p>
+</p>
+
+<br>
+
+<a id="screenshots"></a>
+
+## 🖼️ㅤScreenshots
+
+### 🎵ㅤNow Playing
+
+<p align="center">
+    <img src="Media/Others/Now_Playing_Example.png" alt="Now Playing message example" width="40%" style="border-radius: 15px;">
+</p>
+
+<br>
+
+### 🤖ㅤCommands
+
+<p align="center">
+    <img src="Media/Others/Commands_Example.png" alt="Commands help example" width="65%" style="border-radius: 15px;">
+</p>
+
+<br>
+
+### 📊ㅤStats Dashboard
+
+<p align="center">
+    <img src="Media/Others/Stats_Example.jpeg" alt="Stats dashboard example" width="90%" style="border-radius: 15px;">
+</p>
+
+<br>
+
+<a id="python-setup"></a>
+
 ## 🐍ㅤPython Setup
 
 This project requires **Python 3.12**.
