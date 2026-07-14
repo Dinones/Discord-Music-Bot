@@ -55,11 +55,6 @@ ERROR = f'\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m[X] {RESET_FORMAT}'
 #####################################################     GENERAL     #####################################################
 ###########################################################################################################################
 
-G_COULD_NOT_GET_AWS_SECRETS = \
-    f'{ERROR}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[{module}] "}{RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mCould not get AWS secrets: {RESET_FORMAT}'+\
-    f'\033[{COLORS["Red"]}m{"{error}"} {RESET_FORMAT}'
-
 G_BOT_INITIALIZED = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Main] "}{RESET_FORMAT}'+\
     f'\033[{SPECIAL["Bold"]};{COLORS["Green"]}mBot initialized successfully{RESET_FORMAT}'
@@ -252,6 +247,19 @@ SC_ASK_TO_PRINT_SECRETS = \
 SC_RETRIEVED_SECRETS_FROM_AWS = \
     f'{CORRECT}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
     f'\033[{COLORS["Green"]};{SPECIAL["Bold"]}mSuccessfully retrieved bot secrets from AWS{RESET_FORMAT}'
+
+SC_COULD_NOT_GET_AWS_SECRETS = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mCould not get AWS secrets: {RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]}m{"{error}"}{RESET_FORMAT}'
+
+SC_FALLING_BACK_TO_ENV_SECRETS = \
+    f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Yellow"]};{SPECIAL["Bold"]}mFalling back to secrets from the .env file{RESET_FORMAT}'
+
+SC_COULD_NOT_GET_SECRETS_FROM_AWS_OR_ENV = \
+    f'{ERROR}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\
+    f'\033[{COLORS["Red"]};{SPECIAL["Bold"]}mCould not retrieve secrets from AWS or the .env file{RESET_FORMAT}'
 
 SC_COULD_NOT_GET_YT_COOKIES = \
     f'{WARN}\033[{SPECIAL["Bold"]};{COLORS["Magenta"]}m{"[Secrets] "}{RESET_FORMAT}'+\

@@ -60,7 +60,9 @@
 4. Copy the token immediately.
 
 > [!CAUTION]
-> The bot token is equivalent to a password. Do **NOT** commit it, send it in chat, paste it into screenshots, or store it in `.env`. If the token is ever exposed, reset it immediately in the Discord Developer Portal. The old token stops working as soon as Discord generates the new one.
+> The bot token is equivalent to a password. Do **NOT** commit it, send it in chat, or paste it into screenshots. If the token is ever exposed, reset it immediately in the Discord Developer Portal. The old token stops working as soon as Discord generates the new one.
+>
+> Prefer storing it in AWS Secrets Manager (see [`Cloud_Setup.md`](Cloud_Setup.md)). If you don't have AWS access, the bot falls back to reading it from the gitignored `.env` file. Treat that file with the same care as the token itself (never share it, screenshot it, or move it outside this machine).
 
 5. Under `Authorization Flow`, disable:
 

@@ -76,16 +76,19 @@ class Test_Get_Secrets(unittest.TestCase):
     #######################################################################################################################
     #######################################################################################################################
 
-    def test_get_secrets_returns_none_and_logs_error_on_exception(self) -> None:
+    def test_get_secrets_falls_back_to_env_and_logs_error_on_exception(self) -> None:
 
         """
-        Test that get_secrets() returns None and logs when AWS raises an exception.
+        Test that get_secrets() falls back to _get_secrets_from_env() and logs when AWS raises an exception.
         """
+
+        fake_env_secrets = {"DISCORD_MUSIC_BOT_TOKEN_DEV": "dev-token"}
 
         with (
             patch("Utils.AWS_Secrets.boto3.session.Session") as mock_session_creator,
             patch("Utils.AWS_Secrets.print") as mock_print,
-            patch("Utils.AWS_Secrets.save_exception_to_txt") as mock_save_exception
+            patch("Utils.AWS_Secrets.save_exception_to_txt") as mock_save_exception,
+            patch("Utils.AWS_Secrets._get_secrets_from_env", return_value = fake_env_secrets) as mock_get_from_env
         ):
             mock_session = mock_session_creator.return_value
             mock_client = mock_session.client.return_value
@@ -93,19 +96,23 @@ class Test_Get_Secrets(unittest.TestCase):
 
             result = AWS_Secrets.get_secrets()
 
-        self.assertIsNone(
+        self.assertEqual(
             result,
+            fake_env_secrets,
             _color_error_message_in_red(
-                f'The "get_secrets()" function should return "None" instead of "{result}" when an error is raised.'
+                f'The "get_secrets()" function should return "{fake_env_secrets}" instead of "{result}" ' +
+                'when an error is raised, falling back to _get_secrets_from_env().'
             )
         )
 
-        count = 1
+        mock_get_from_env.assert_called_once()
+
+        count = 2
         self.assertEqual(
             mock_print.call_count,
             count,
             _color_error_message_in_red(
-                f'Exactly "{count}" logging message should have been printed in terminal instead of ' +
+                f'Exactly "{count}" logging messages should have been printed in terminal instead of ' +
                 f'"{mock_print.call_count}".'
             )
         )
@@ -117,6 +124,52 @@ class Test_Get_Secrets(unittest.TestCase):
             _color_error_message_in_red(
                 f'The "save_exception_to_txt()" function should have been called with the "{expected_title}" argument ' +
                 f'instead of "{mock_save_exception.call_args.kwargs.get("title")}".'
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    def test_get_secrets_returns_empty_dict_and_logs_error_when_env_fallback_also_empty(self) -> None:
+
+        """
+        Test that get_secrets() returns an empty dict and logs an error (not just a warning) when both AWS and the
+        .env fallback fail to provide any secrets.
+        """
+
+        with (
+            patch("Utils.AWS_Secrets.boto3.session.Session") as mock_session_creator,
+            patch("Utils.AWS_Secrets.print") as mock_print,
+            patch("Utils.AWS_Secrets.save_exception_to_txt") as mock_save_exception,
+            patch("Utils.AWS_Secrets._get_secrets_from_env", return_value = {}) as mock_get_from_env,
+            patch("Utils.AWS_Secrets.STR.SC_COULD_NOT_GET_SECRETS_FROM_AWS_OR_ENV", "both-failed-message")
+        ):
+            mock_session = mock_session_creator.return_value
+            mock_client = mock_session.client.return_value
+            mock_client.get_secret_value.side_effect = Exception("aws error")
+
+            result = AWS_Secrets.get_secrets()
+
+        self.assertEqual(
+            result,
+            {},
+            _color_error_message_in_red(
+                f'The "get_secrets()" function should return "{{}}" instead of "{result}" when both AWS and the ' +
+                '.env fallback fail to provide any secrets.'
+            )
+        )
+
+        mock_get_from_env.assert_called_once()
+
+        mock_print.assert_any_call("both-failed-message")
+
+        count = 2
+        self.assertEqual(
+            mock_print.call_count,
+            count,
+            _color_error_message_in_red(
+                f'Exactly "{count}" logging messages should have been printed in terminal instead of ' +
+                f'"{mock_print.call_count}".'
             )
         )
 

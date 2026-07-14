@@ -123,6 +123,8 @@ Create the Discord application, configure the bot token/intents, and install it 
 
 The bot reads its secrets (Discord token, Spotify credentials, etc.) from AWS Secrets Manager. Follow the steps in [`Documentation/Cloud_Setup.md`](Documentation/Cloud_Setup.md) to provision the required AWS resources and fill the secret values.
 
+If AWS Secrets Manager cannot be reached (no AWS access configured), the bot automatically falls back to reading the same keys from environment variables, so it can also run entirely off a `.env` file (see <a href="#running-without-aws">Running Without AWS</a>).
+
 <br>
 
 ## ⚙️ㅤEnvironment Configuration
@@ -136,6 +138,34 @@ BOT_ENV=dev
 | Variable  | Values          | Default | Description                                       |
 |-----------|-----------------|---------|---------------------------------------------------|
 | `BOT_ENV` | `dev` \| `prod` | `dev`   | Selects which Discord token and channel to use.   |
+
+<br>
+
+<a id="running-without-aws"></a>
+
+### 🔁ㅤRunning Without AWS
+
+When there is no AWS access, add the secret keys directly to `.env` and the bot will use them instead:
+
+```env
+BOT_ENV=dev
+
+DISCORD_MUSIC_BOT_TOKEN_DEV  = ""
+DISCORD_MUSIC_BOT_TOKEN_PROD = ""
+
+SPOTIFY_CLIENT_ID     = ""
+SPOTIFY_CLIENT_SECRET = ""
+
+BOT_ACTIVITY_NAME         = ""
+DISCORD_SERVER_NAME       = ""
+DISCORD_TEXT_CHANNEL_DEV  = ""
+DISCORD_TEXT_CHANNEL_PROD = ""
+
+S3_EXTRA_COMMANDS_BUCKET = 
+SPOTIFY_PLAYLISTS        = [{"name": "", "url": "https://open.spotify.com/playlist/..."}]
+```
+
+These mirror the JSON secret schema in [`Documentation/Cloud_Setup.md`](Documentation/Cloud_Setup.md#fill-secrets) — `SPOTIFY_PLAYLISTS` must be a valid JSON array string. Only the variables you actually need have to be set; everything else is skipped.
 
 <br>
 
