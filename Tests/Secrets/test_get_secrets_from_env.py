@@ -122,7 +122,8 @@ class Test_Get_Secrets_From_Env(unittest.TestCase):
 
         with (
             patch.dict(os.environ, {"SPOTIFY_PLAYLISTS": "not json"}, clear = True),
-            patch("Utils.AWS_Secrets.print") as mock_print
+            patch("Utils.AWS_Secrets.print") as mock_print,
+            patch("Utils.AWS_Secrets.save_exception_to_txt") as mock_save_exception
         ):
             result = AWS_Secrets._get_secrets_from_env()
 
@@ -140,6 +141,16 @@ class Test_Get_Secrets_From_Env(unittest.TestCase):
             _color_error_message_in_red(
                 'Exactly "1" logging message should have been printed when "SPOTIFY_PLAYLISTS" JSON is invalid ' +
                 f'instead of "{mock_print.call_count}".'
+            )
+        )
+
+        expected_title = "Parse_Env_Playlists"
+        self.assertEqual(
+            mock_save_exception.call_args.kwargs.get("title"),
+            expected_title,
+            _color_error_message_in_red(
+                f'The "save_exception_to_txt()" function should have been called with the "{expected_title}" argument ' +
+                f'instead of "{mock_save_exception.call_args.kwargs.get("title")}".'
             )
         )
 

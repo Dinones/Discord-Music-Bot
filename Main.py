@@ -281,8 +281,8 @@ async def _alone_disconnect(
 
     try:
         await voice_client.disconnect()
-    except Exception:
-        pass
+    except Exception as error:
+        save_exception_to_txt(error = error, title = 'Auto_Disconnect')
 
     record_session_end(music_manager.session_start, music_manager.session_songs, music_manager.session_users)
 

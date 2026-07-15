@@ -76,6 +76,7 @@ def _get_secrets_from_env() -> Dict[str, Any]:
                     reason = error
                 )
             )
+            save_exception_to_txt(error = error, title = 'Parse_Env_Playlists')
 
     return secrets
 

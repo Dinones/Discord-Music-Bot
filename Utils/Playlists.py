@@ -8,8 +8,15 @@
 
 from __future__ import annotations
 
+import os
+import sys
 import json
 from typing import List, Dict, Any
+
+# Module may be executed for testing purposes and may require different import paths
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from Utils.Logs import save_exception_to_txt
 
 ###########################################################################################################################
 #################################################     INITIALIZATIONS     #################################################
@@ -40,7 +47,8 @@ def load_playlists(secrets: Dict[str, Any]) -> None:
     if isinstance(raw, str):
         try:
             raw = json.loads(raw)
-        except (json.JSONDecodeError, TypeError):
+        except (json.JSONDecodeError, TypeError) as error:
+            save_exception_to_txt(error = error, title = 'Load_Playlists')
             raw = []
 
     _playlists = raw if isinstance(raw, list) else []

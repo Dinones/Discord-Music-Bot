@@ -20,6 +20,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from Utils import Colored_Strings as STR
 from Utils.Reactions import send_reaction
+from Utils.Logs import save_exception_to_txt
 
 try:
     from Utils import Custom_Messages as MSG
@@ -98,6 +99,7 @@ def register_stats_command(bot: commands.Bot) -> None:
                         reason = error
                     )
                 )
+                save_exception_to_txt(error = error, title = 'Stats_Screenshot')
                 await context.message.remove_reaction("⏳", context.bot.user)
                 await send_reaction(context.message, "❌")
                 await context.send(MSG.STATS_GENERATION_FAILED)
