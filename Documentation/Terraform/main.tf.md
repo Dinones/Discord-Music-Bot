@@ -1,12 +1,15 @@
-## 📋⠀Table of Contents
+<h2>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Clipboard.svg" width="28px" align="top"/>
+    ⠀Table of Contents
+</h2>
 
 - [🧩⠀terraform { ... }](#terraform-block)
 - [🧩⠀provider "aws" { ... }](#provider)
 - [🧩⠀resource "aws_secretsmanager_secret" "discord_bot_secret" { ... }](#secret)
 - [🧩⠀resource "aws_secretsmanager_secret" "youtube_cookies_secret" { ... }](#yt-secret)
 - [🧩⠀data "aws_iam_policy_document" "secret_reader" { ... }](#policy-doc)
-  - [🔒⠀dynamic "statement" — ListExtraCommandsBucket](#list-extra)
-  - [🔒⠀dynamic "statement" — GetExtraCommands](#get-extra)
+  - <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="16px" align="center"/> [dynamic "statement" — ListExtraCommandsBucket](#list-extra)
+  - <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="16px" align="center"/> [dynamic "statement" — GetExtraCommands](#get-extra)
 - [🧩⠀resource "aws_s3_object" "extra_commands_folder" { ... }](#extra-folder)
 - [🧩⠀resource "aws_iam_user" "secret_reader" { ... }](#iam-user)
 - [🧩⠀resource "aws_iam_user_policy" "secret_reader" { ... }](#user-policy)
@@ -150,9 +153,10 @@ This is the most important least-privilege part of the design:
 
 <hr>
 
-<a id="list-extra"></a>
-
-### 🔒⠀dynamic "statement" — ListExtraCommandsBucket
+<h3 id="list-extra">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="22px" align="top"/>
+    ⠀dynamic "statement" — ListExtraCommandsBucket
+</h3>
 
 This optional statement is only added when `var.extra_commands_bucket` is not empty. It allows the IAM user to list objects under the `discord-music-bot/Extra_Commands/` prefix so the bot can discover which command files to download at startup.
 
@@ -186,9 +190,10 @@ dynamic "statement" {
 
 <hr>
 
-<a id="get-extra"></a>
-
-### 🔒⠀dynamic "statement" — GetExtraCommands
+<h3 id="get-extra">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="22px" align="top"/>
+    ⠀dynamic "statement" — GetExtraCommands
+</h3>
 
 This optional statement allows the IAM user to download the actual command files once they are discovered by the listing statement above.
 

@@ -1,24 +1,30 @@
-## 📋ㅤTable of Contents
+<h2>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Clipboard.svg" width="28px" align="top"/>
+    ⠀Table of Contents
+</h2>
 
 - [🪣ㅤCreate the S3 Backend Bucket (One Time Only)](#s3-backend)
 - [🗂️ㅤConfigure the Shared Terraform State](#terraform-state)
 - [📦ㅤWhat This Terraform Creates](#what-creates)
-- [📥ㅤInstall the Required Tools](#install-tools)
-  - [🪟ㅤWindows Environment](#windows)
-  - [🐧ㅤUbuntu Environment](#ubuntu)
-- [🔐ㅤAuthenticate to AWS](#authenticate)
-- [🛠️ㅤRun Terraform](#run-terraform)
-  - [🚀ㅤInitialize Terraform](#init)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Gear%201.svg" width="16px" align="center"/> [ㅤInstall the Required Tools](#install-tools)
+  - <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Windows.svg" width="16px" align="center"/> [ㅤWindows Environment](#windows)
+  - <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Ubuntu.svg" width="16px" align="center"/> [ㅤUbuntu Environment](#ubuntu)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="16px" align="center"/> [ㅤAuthenticate to AWS](#authenticate)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Gear%203.svg" width="16px" align="center"/> [ㅤRun Terraform](#run-terraform)
+  - <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Rocket.svg" width="16px" align="center"/> [ㅤInitialize Terraform](#init)
   - [🔎ㅤPreview the Changes](#plan)
   - [🏗️ㅤApply the Infrastructure](#apply)
-- [🪪ㅤRetrieve the Limited IAM Credentials](#credentials)
-- [🔑ㅤFill the Secret Values in AWS](#fill-secrets)
-  - [🔐ㅤFill `discord_music_bot_secrets`](#fill-bot-secret)
-  - [🔐ㅤFill `discord_music_bot_youtube_cookies`](#fill-cookies-secret)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="16px" align="center"/> [ㅤRetrieve the Limited IAM Credentials](#credentials)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="16px" align="center"/> [ㅤFill the Secret Values in AWS](#fill-secrets)
+  - <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="16px" align="center"/> [ㅤFill `discord_music_bot_secrets`](#fill-bot-secret)
+  - <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="16px" align="center"/> [ㅤFill `discord_music_bot_youtube_cookies`](#fill-cookies-secret)
 
 <br><br>
 
-# ☁️ㅤCloud Setup
+<h1>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="32px" align="top"/>
+    ⠀Cloud Setup
+</h1>
 
 This guide explains how to run the Terraform in the `Cloud/` folder from zero and how to safely apply future changes without duplicating AWS resources or overwriting any existing value/file.
 
@@ -100,23 +106,26 @@ The Terraform in this project currently creates:
 
 <br>
 
-<a id="install-tools"></a>
-
-## 📥ㅤInstall the Required Tools
+<h2 id="install-tools">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Gear%201.svg" width="30px" align="top"/>
+    ⠀Install the Required Tools
+</h2>
 
 Install **Terraform** and **AWS CLI**.
 
-<a id="windows"></a>
-
-### 🪟ㅤWindows Environment
+<h3 id="windows">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Windows.svg" width="22px" align="top"/>
+    ⠀Windows Environment
+</h3>
 
 ```bash
 choco install terraform awscli -y
 ```
 
-<a id="ubuntu"></a>
-
-### 🐧ㅤUbuntu Environment
+<h3 id="ubuntu">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Ubuntu.svg" width="22px" align="top"/>
+    ⠀Ubuntu Environment
+</h3>
 
 ```bash
 sudo apt-get update
@@ -144,9 +153,10 @@ You can now safely delete any downloaded folders like `aws/` or `awscliv2.zip`.
 
 <br>
 
-<a id="authenticate"></a>
-
-## 🔐ㅤAuthenticate to AWS
+<h2 id="authenticate">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="30px" align="top"/>
+    ⠀Authenticate to AWS
+</h2>
 
 Before running Terraform, authenticate with an AWS identity that has permission to read the S3 bucket mentioned before and create:
 
@@ -166,13 +176,15 @@ aws configure
 
 <br>
 
-<a id="run-terraform"></a>
+<h2 id="run-terraform">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Gear%203.svg" width="30px" align="top"/>
+    ⠀Run Terraform
+</h2>
 
-## 🛠️ㅤRun Terraform
-
-<a id="init"></a>
-
-### 🚀ㅤInitialize Terraform
+<h3 id="init">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Rocket.svg" width="22px" align="top"/>
+    ⠀Initialize Terraform
+</h3>
 
 Open a terminal in the root folder and run:
 
@@ -233,9 +245,10 @@ After that, Terraform will create the AWS resources defined in the `Cloud/` fold
 
 <br>
 
-<a id="credentials"></a>
-
-## 🪪ㅤRetrieve the Limited IAM Credentials
+<h2 id="credentials">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="30px" align="top"/>
+    ⠀Retrieve the Limited IAM Credentials
+</h2>
 
 After `terraform apply`, you can retrieve the credentials of the restricted IAM user with:
 
@@ -262,9 +275,10 @@ Set:
 
 <br>
 
-<a id="fill-secrets"></a>
-
-## 🔑ㅤFill the Secret Values in AWS
+<h2 id="fill-secrets">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="30px" align="top"/>
+    ⠀Fill the Secret Values in AWS
+</h2>
 <a id="sec:fill-secret-value"></a>
 
 After the secrets have been created, go to:
@@ -273,9 +287,10 @@ After the secrets have been created, go to:
 
 <hr>
 
-<a id="fill-bot-secret"></a>
-
-### 🔐ㅤFill `discord_music_bot_secrets`
+<h3 id="fill-bot-secret">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="22px" align="top"/>
+    ⠀Fill `discord_music_bot_secrets`
+</h3>
 
 Set the JSON content with:
 
@@ -302,9 +317,10 @@ Set the JSON content with:
 
 <hr>
 
-<a id="fill-cookies-secret"></a>
-
-### 🔐ㅤFill `discord_music_bot_youtube_cookies`
+<h3 id="fill-cookies-secret">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="22px" align="top"/>
+    ⠀Fill `discord_music_bot_youtube_cookies`
+</h3>
 
 1. Extract the session Youtube cookies from your browser as explained in <a href="./Youtube_Cookies.md">Youtube_Cookies.md</a>.
 2. Paste the full Netscape cookies content in the AWS secret.

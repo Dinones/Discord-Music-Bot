@@ -1,4 +1,7 @@
-## 📋⠀Table of Contents
+<h2>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Clipboard.svg" width="28px" align="top"/>
+    ⠀Table of Contents
+</h2>
 
 - [🧩⠀output "secret_arn" { ... }](#secret-arn)
 - [🧩⠀output "secret_name" { ... }](#secret-name)

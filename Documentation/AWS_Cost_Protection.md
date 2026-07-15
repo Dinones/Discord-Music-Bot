@@ -1,17 +1,23 @@
-## 📋ㅤTable of Contents
+<h2>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Clipboard.svg" width="28px" align="top"/>
+    ⠀Table of Contents
+</h2>
 
-- [📊ㅤAWS Budgets Action](#budgets)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Monitor.svg" width="16px" align="center"/> [AWS Budgets Action](#budgets)
   - [1️⃣ Create the "Panic Deny" IAM Policy](#panic-policy)
   - [2️⃣ Create the Budget Actions IAM Role](#budgets-role)
   - [3️⃣ Create the Budget](#create-budget)
-- [🔔ㅤCloudWatch Billing Alarm](#cloudwatch)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Notification.svg" width="16px" align="center"/> [CloudWatch Billing Alarm](#cloudwatch)
   - [1️⃣ Enable Billing Alerts](#billing-alerts)
   - [2️⃣ Create the Alarm](#create-alarm)
 - [🤖ㅤAWS Cost Anomaly Detection](#anomaly)
 
 <br><br>
 
-# 🛡️ㅤAWS Cost Protection
+<h1>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="32px" align="top"/>
+    ⠀AWS Cost Protection
+</h1>
 
 Three-layer setup to detect and block unexpected AWS charges. Set all three up for full coverage.
 
@@ -23,9 +29,10 @@ Three-layer setup to detect and block unexpected AWS charges. Set all three up f
 
 <br>
 
-<a id="budgets"></a>
-
-## 📊ㅤAWS Budgets Action
+<h2 id="budgets">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Monitor.svg" width="30px" align="top"/>
+    ⠀AWS Budgets Action
+</h2>
 
 Attaches a deny IAM policy to your admin user when actual charges exceed the budget threshold.
 
@@ -139,9 +146,10 @@ Attaches a deny IAM policy to your admin user when actual charges exceed the bud
 
 <br>
 
-<a id="cloudwatch"></a>
-
-## 🔔ㅤCloudWatch Billing Alarm
+<h2 id="cloudwatch">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Notification.svg" width="30px" align="top"/>
+    ⠀CloudWatch Billing Alarm
+</h2>
 
 Sends an email when estimated charges cross a fixed threshold. Checks every ~6 hours.
 

@@ -1,4 +1,7 @@
-## 📋ㅤTable of Contents
+<h2>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Clipboard.svg" width="28px" align="top"/>
+    ⠀Table of Contents
+</h2>
 
 - [🍪ㅤDownload Local Youtube Cookies](#download-local-youtube-cookies)
 

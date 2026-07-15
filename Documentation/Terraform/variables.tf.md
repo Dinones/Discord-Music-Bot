@@ -1,4 +1,7 @@
-## 📋⠀Table of Contents
+<h2>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Clipboard.svg" width="28px" align="top"/>
+    ⠀Table of Contents
+</h2>
 
 - [🧩⠀aws_region](#aws-region)
 - [🧩⠀project_name](#project-name)

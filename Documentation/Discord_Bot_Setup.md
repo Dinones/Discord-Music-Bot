@@ -1,25 +1,32 @@
-## 📋ㅤTable of Contents
+<h2>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Clipboard.svg" width="28px" align="top"/>
+    ⠀Table of Contents
+</h2>
 
-- [🤖ㅤCreate the Discord Application](#create-app)
-- [⚙️ㅤConfigure the Bot User](#configure-bot)
-- [🔑ㅤSave the Bot Token](#save-token)
-- [🛡️ㅤConfigure Install Permissions](#install-permissions)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Discord.svg" width="16px" align="center"/> [Create the Discord Application](#create-app)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Gear%202.svg" width="16px" align="center"/> [Configure the Bot User](#configure-bot)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="16px" align="center"/> [Save the Bot Token](#save-token)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="16px" align="center"/> [Configure Install Permissions](#install-permissions)
 - [🔗ㅤInstall the Bot in Your Server](#install-server)
 - [✅ㅤVerify the Setup](#verify)
-- [🧯ㅤTroubleshooting](#troubleshooting)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Virus.svg" width="16px" align="center"/> [Troubleshooting](#troubleshooting)
 
 <br><br>
 
-# 🤖ㅤDiscord Bot Setup
+<h1>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Discord.svg" width="32px" align="top"/>
+    ⠀Discord Bot Setup
+</h1>
 
 > [!IMPORTANT]
 > You need a Discord account with `Manage Server` permission in the target server. Without that permission, Discord will not let you add the bot to the server.
 
 <br>
 
-<a id="create-app"></a>
-
-## 🤖ㅤCreate the Discord Application
+<h2 id="create-app">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Discord.svg" width="30px" align="top"/>
+    ⠀Create the Discord Application
+</h2>
 
 1. Open the <a href="https://discord.com/developers/applications">Discord Developer Portal</a>.
 
@@ -47,9 +54,10 @@
 
 <br>
 
-<a id="configure-bot"></a>
-
-## ⚙️ㅤConfigure the Bot User
+<h2 id="configure-bot">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Gear%202.svg" width="30px" align="top"/>
+    ⠀Configure the Bot User
+</h2>
 
 1. In the application sidebar, open `Bot`.
 
@@ -86,9 +94,10 @@
 
 <br>
 
-<a id="install-permissions"></a>
-
-## 🛡️ㅤConfigure Install Permissions
+<h2 id="install-permissions">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="30px" align="top"/>
+    ⠀Configure Install Permissions
+</h2>
 
 The bot needs Discord permissions to read commands, send responses, react to messages, join voice channels, and play audio.
 

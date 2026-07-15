@@ -12,6 +12,7 @@ crash.log
 # OS / Editor
 .DS_Store
 .claude/
+CLAUDE.md
 .vscode/
 .idea/
 .venv
