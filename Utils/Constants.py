@@ -13,7 +13,7 @@ BOT_ACTIVITY_TYPE = 'Listening'
 # Options: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL" or empty string to disable all
 LOGGING_LEVEL = ''
 # Seconds the bot waits alone in a voice channel before disconnecting automatically
-AUTO_DISCONNECT_TIMEOUT_SECONDS = 60 * 5
+AUTO_DISCONNECT_TIMEOUT_SECONDS = 60 * 3
 
 ###########################################################################################################################
 #####################################################     SECRETS     #####################################################

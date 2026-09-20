@@ -67,6 +67,47 @@ def _render_and_screenshot() -> bytes:
     return screenshot
 
 ###########################################################################################################################
+###########################################################################################################################
+
+async def send_stats_screenshot(channel: discord.abc.Messageable, user: str) -> bool:
+
+    """
+    Render the stats dashboard and send the screenshot to a channel without a command context. Used when the bot
+    disconnects on its own. Failures are logged and swallowed so they never break the caller.
+
+    Args:
+        channel (discord.abc.Messageable): Channel to send the screenshot to.
+        user (str): Name shown in the console logs as the actor.
+
+    Returns:
+        bool: True if the screenshot was sent, False if rendering or sending failed.
+    """
+
+    try:
+        screenshot_bytes = await asyncio.to_thread(_render_and_screenshot)
+        await channel.send(file = discord.File(io.BytesIO(screenshot_bytes), filename = "stats.png"))
+
+    except Exception as error:
+        print(
+            STR.G_ACTION_NOT_DONE.format(
+                user   = user,
+                action = "generate stats screenshot",
+                reason = error
+            )
+        )
+        save_exception_to_txt(error = error, title = 'Stats_Screenshot')
+        return False
+
+    print(
+        STR.G_ACTION_DONE.format(
+            user   = user,
+            action = "generate stats screenshot",
+            result = "Screenshot sent to Discord"
+        )
+    )
+    return True
+
+###########################################################################################################################
 #################################################     COMMANDS     ########################################################
 ###########################################################################################################################
 

@@ -20,6 +20,7 @@ from dotenv import load_dotenv
 from discord.ext import commands
 from dataclasses import dataclass
 
+from Commands.Stats import send_stats_screenshot
 from Utils import Constants as CONST
 from Utils import Colored_Strings as STR
 from Utils.AWS_Secrets import get_secrets
@@ -305,6 +306,7 @@ async def _alone_disconnect(
 
     if music_manager.last_text_channel:
         await music_manager.last_text_channel.send(MSG.AUTO_DISCONNECTED.format(time = time))
+        await send_stats_screenshot(music_manager.last_text_channel, MODULE_NAME)
 
 ###########################################################################################################################
 ###########################################################################################################################

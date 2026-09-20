@@ -21,6 +21,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from Commands.Clear import clear
 from Commands.Play import play
 from Utils.Playlists import get_playlists
+from Utils.Music_Manager import get_music_manager
 from Utils import Colored_Strings as STR
 
 try:
@@ -125,6 +126,9 @@ class _Playlist_Button(discord.ui.Button):
                 result = "clearing queue and starting shuffled playback"
             )
         )
+
+        # Button clicks bypass on_message, so remember the channel here for the auto-disconnect message and stats
+        get_music_manager().last_text_channel = interaction.channel
 
         message = self._startup_message or _No_Op_Message(interaction.user)
         ctx     = _Interaction_Context(interaction, self._bot, message)
