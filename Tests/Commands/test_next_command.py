@@ -161,6 +161,84 @@ class Test_Register_Next_Command(unittest.IsolatedAsyncioTestCase):
         context.voice_client.stop.assert_called_once()
         mock_reaction.assert_called_once_with(context.message, "✅")
 
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_skip_count_drops_extra_songs_before_stopping(self) -> None:
+
+        context       = self._build_context(is_playing = True)
+        mock_manager  = Mock(drop_songs = AsyncMock())
+
+        with (
+            patch("Commands.Next.connect_to_voice_channel", new = AsyncMock(return_value = True)),
+            patch("Commands.Next.send_reaction",            new = AsyncMock(return_value = True)),
+            patch("Commands.Next.get_music_manager",        return_value = mock_manager),
+            patch("Commands.Next.print")
+        ):
+            await self.next_command(context, "4")
+
+        mock_manager.drop_songs.assert_called_once_with(3)
+        context.voice_client.stop.assert_called_once()
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_skip_count_1_does_not_call_drop_songs(self) -> None:
+
+        context      = self._build_context(is_playing = True)
+        mock_manager = Mock(drop_songs = AsyncMock())
+
+        with (
+            patch("Commands.Next.connect_to_voice_channel", new = AsyncMock(return_value = True)),
+            patch("Commands.Next.send_reaction",            new = AsyncMock(return_value = True)),
+            patch("Commands.Next.get_music_manager",        return_value = mock_manager),
+            patch("Commands.Next.print")
+        ):
+            await self.next_command(context, "1")
+
+        mock_manager.drop_songs.assert_not_called()
+        context.voice_client.stop.assert_called_once()
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_skip_invalid_count_defaults_to_1(self) -> None:
+
+        context      = self._build_context(is_playing = True)
+        mock_manager = Mock(drop_songs = AsyncMock())
+
+        with (
+            patch("Commands.Next.connect_to_voice_channel", new = AsyncMock(return_value = True)),
+            patch("Commands.Next.send_reaction",            new = AsyncMock(return_value = True)),
+            patch("Commands.Next.get_music_manager",        return_value = mock_manager),
+            patch("Commands.Next.print")
+        ):
+            await self.next_command(context, "abc")
+
+        mock_manager.drop_songs.assert_not_called()
+        context.voice_client.stop.assert_called_once()
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    async def test_skip_count_capped_at_max_songs_and_sends_message(self) -> None:
+
+        context      = self._build_context(is_playing = True)
+        mock_manager = Mock(drop_songs = AsyncMock())
+
+        with (
+            patch("Commands.Next.connect_to_voice_channel", new = AsyncMock(return_value = True)),
+            patch("Commands.Next.send_reaction",            new = AsyncMock(return_value = True)),
+            patch("Commands.Next.get_music_manager",        return_value = mock_manager),
+            patch("Commands.Next._MAX_SONGS",               new = 5),
+            patch("Commands.Next.print")
+        ):
+            await self.next_command(context, "999")
+
+        mock_manager.drop_songs.assert_called_once_with(4)
+        context.send.assert_called_once()
+        context.voice_client.stop.assert_called_once()
+
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
 ###########################################################################################################################

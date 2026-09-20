@@ -81,7 +81,7 @@ async def resolve_play_request(context: commands.Context, args: str) -> List[Son
 ###########################################################################################################################
 ###########################################################################################################################
 
-async def play(context: commands.Context, args: str, shuffle: bool = False) -> None:
+async def play(context: commands.Context, args: str, shuffle: bool = False, reverse: bool = False) -> None:
 
     """
     Queue songs and start playback.
@@ -90,6 +90,7 @@ async def play(context: commands.Context, args: str, shuffle: bool = False) -> N
         context (commands.Context): Discord command context.
         args (str): Youtube URL, Spotify URL or text query. Empty string resumes paused playback.
         shuffle (bool): When True, shuffle the queue after enqueuing and before playback starts.
+        reverse (bool): When True, reverse the resolved song list before enqueuing.
 
     Returns:
         None
@@ -108,12 +109,16 @@ async def play(context: commands.Context, args: str, shuffle: bool = False) -> N
     # Show loading indicator while the API call resolves the song
     await send_reaction(context.message, "⏳")
 
-    songs_to_queue = await resolve_play_request(context, args)
+    async with context.typing():
+        songs_to_queue = await resolve_play_request(context, args)
     if not songs_to_queue:
         await send_reaction(context.message, "❌")
         await remove_reaction(context.message, "⏳", context.bot.user)
         await context.send(MSG.PLAY_COULD_NOT_FIND_SONGS)
         return
+
+    if reverse:
+        songs_to_queue = list(reversed(songs_to_queue))
 
     music_manager = get_music_manager()
     # Enqueue first, then optionally shuffle, then reserve queue worker in a race-safe way
@@ -126,6 +131,7 @@ async def play(context: commands.Context, args: str, shuffle: bool = False) -> N
 
     # Report queue update to the user
     if len(songs_to_queue) == 1:
+        songs_to_queue[0]["explicitly_requested"] = True
         song  = songs_to_queue[0]
         title = song.get("title", "Unknown title")
         url   = song.get("playback_query", "") or song.get("spotify_url", "")

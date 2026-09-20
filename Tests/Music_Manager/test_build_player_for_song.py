@@ -173,6 +173,49 @@ class Test_Build_Player_For_Song(unittest.TestCase):
             resolved_video
         )
 
+    #######################################################################################################################
+    #######################################################################################################################
+
+    def test_stream_url_is_cached_on_song(self) -> None:
+
+        song = {"title": "Test"}
+
+        with (
+            patch("Utils.Music_Manager.get_audio_player", return_value = Mock()),
+            patch("Utils.Music_Manager.enrich_song_from_video")
+        ):
+            self._build_player_for_song(song, {"url": "https://audio.url"})
+
+        self.assertEqual(
+            song.get("_stream_url"),
+            "https://audio.url",
+            _color_error_message_in_red(
+                "_build_player_for_song() should cache the stream URL on the song dict as '_stream_url' "
+                "so that prepare_seek_player() can reuse it without calling yt-dlp again."
+            )
+        )
+
+    #######################################################################################################################
+    #######################################################################################################################
+
+    def test_stream_url_is_not_cached_when_url_is_empty(self) -> None:
+
+        song = {"title": "Test"}
+
+        result = self._build_player_for_song(song, {"url": ""})
+
+        self.assertIsNone(
+            result,
+            _color_error_message_in_red("Empty URL should return None before caching.")
+        )
+        self.assertNotIn(
+            "_stream_url",
+            song,
+            _color_error_message_in_red(
+                "_stream_url should not be set on the song when the URL is empty."
+            )
+        )
+
 ###########################################################################################################################
 #####################################################     PROGRAM     #####################################################
 ###########################################################################################################################

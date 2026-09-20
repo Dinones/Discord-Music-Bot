@@ -43,6 +43,9 @@ class Test_Alone_Disconnect(unittest.IsolatedAsyncioTestCase):
         mm.clear_all_queues   = AsyncMock()
         mm.alone_timeout_task = Mock()
         mm.last_text_channel  = last_text_channel
+        mm.session_start      = None
+        mm.session_songs      = 0
+        mm.session_users      = set()
 
         return mm
 

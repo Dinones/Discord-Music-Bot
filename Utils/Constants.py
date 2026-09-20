@@ -13,7 +13,7 @@ BOT_ACTIVITY_TYPE = 'Listening'
 # Options: "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL" or empty string to disable all
 LOGGING_LEVEL = ''
 # Seconds the bot waits alone in a voice channel before disconnecting automatically
-AUTO_DISCONNECT_TIMEOUT_SECONDS = 60 * 5
+AUTO_DISCONNECT_TIMEOUT_SECONDS = 60 * 3
 
 ###########################################################################################################################
 #####################################################     SECRETS     #####################################################
@@ -22,6 +22,8 @@ AUTO_DISCONNECT_TIMEOUT_SECONDS = 60 * 5
 AWS_REGION  = "eu-west-1"
 SECRET_NAME = "discord_music_bot_secrets"
 YT_COOKIES_SECRET_NAME = 'discord_music_bot_youtube_cookies'
+
+S3_EXTRA_COMMANDS_PREFIX = "extra-commands/"
 
 ###########################################################################################################################
 #####################################################     YOUTUBE     #####################################################

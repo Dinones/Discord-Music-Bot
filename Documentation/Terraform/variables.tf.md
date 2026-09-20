@@ -1,7 +1,28 @@
+<h2>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Clipboard.svg" width="28px" align="top"/>
+    ⠀Table of Contents
+</h2>
+
+- [🧩⠀aws_region](#aws-region)
+- [🧩⠀project_name](#project-name)
+- [🧩⠀secret_name](#secret-name)
+- [🧩⠀youtube_cookies_secret_name](#yt-secret-name)
+- [🧩⠀create_secret_reader_user](#create-user)
+- [🧩⠀secret_reader_user_name](#user-name)
+- [🧩⠀create_secret_reader_access_key](#create-key)
+- [🧩⠀extra_commands_bucket](#extra-commands-bucket)
+
+<br><br>
+
 # 📜⠀variables.tf
 
 This file defines input variables to change values without rewriting the Terraform resources.
-aws_region
+
+<br>
+
+<a id="aws-region"></a>
+
+## 🧩⠀aws_region
 
 This variable defines the AWS region where Terraform will create resources.
 
@@ -14,6 +35,8 @@ variable "aws_region" {
 ```
 
 <br>
+
+<a id="project-name"></a>
 
 ## 🧩⠀project_name
 
@@ -29,6 +52,8 @@ variable "project_name" {
 
 <br>
 
+<a id="secret-name"></a>
+
 ## 🧩⠀secret_name
 
 This variable sets the name of the Secrets Manager secret.
@@ -42,6 +67,8 @@ variable "secret_name" {
 ```
 
 <br>
+
+<a id="yt-secret-name"></a>
 
 ## 🧩⠀youtube_cookies_secret_name
 
@@ -57,6 +84,8 @@ variable "youtube_cookies_secret_name" {
 
 <br>
 
+<a id="create-user"></a>
+
 ## 🧩⠀create_secret_reader_user
 
 This variable controls whether Terraform should create the restricted IAM user. If set to `false`, Terraform will skip the IAM user and anything that depends on it.
@@ -70,6 +99,8 @@ variable "create_secret_reader_user" {
 ```
 
 <br>
+
+<a id="user-name"></a>
 
 ## 🧩⠀secret_reader_user_name
 
@@ -85,6 +116,8 @@ variable "secret_reader_user_name" {
 
 <br>
 
+<a id="create-key"></a>
+
 ## 🧩⠀create_secret_reader_access_key
 
 This variable controls whether Terraform should generate an access key for the restricted IAM user. If set to `false`, the IAM user can still be created, but Terraform will not generate programmatic credentials for it.
@@ -96,3 +129,24 @@ variable "create_secret_reader_access_key" {
     default     = true
 }
 ```
+
+<br>
+
+<a id="extra-commands-bucket"></a>
+
+## 🧩⠀extra_commands_bucket
+
+This variable sets the S3 bucket name used for the `extra-commands/` folder. It defaults to empty (disabled). The real value is never committed to git — set it in `Cloud/terraform.tfvars` (gitignored):
+
+```hcl
+extra_commands_bucket = "your-bucket-name"
+```
+
+```terraform
+variable "extra_commands_bucket" {
+    type        = string
+    description = "S3 bucket name for Extra_Commands. Set in terraform.tfvars (gitignored), leave empty to disable."
+    default     = ""
+}
+```
+

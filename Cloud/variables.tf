@@ -39,3 +39,9 @@ variable "create_secret_reader_access_key" {
     description = "Whether Terraform should create an access key for the limited IAM user"
     default     = true
 }
+
+variable "extra_commands_bucket" {
+    type        = string
+    description = "S3 bucket name for Extra_Commands. Set in terraform.tfvars (gitignored), leave empty to disable."
+    default     = ""
+}

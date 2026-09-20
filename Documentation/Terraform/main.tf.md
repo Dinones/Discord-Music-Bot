@@ -1,8 +1,29 @@
+<h2>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Clipboard.svg" width="28px" align="top"/>
+    ⠀Table of Contents
+</h2>
+
+- [🧩⠀terraform { ... }](#terraform-block)
+- [🧩⠀provider "aws" { ... }](#provider)
+- [🧩⠀resource "aws_secretsmanager_secret" "discord_bot_secret" { ... }](#secret)
+- [🧩⠀resource "aws_secretsmanager_secret" "youtube_cookies_secret" { ... }](#yt-secret)
+- [🧩⠀data "aws_iam_policy_document" "secret_reader" { ... }](#policy-doc)
+  - <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="16px" align="center"/> [dynamic "statement" — ListExtraCommandsBucket](#list-extra)
+  - <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="16px" align="center"/> [dynamic "statement" — GetExtraCommands](#get-extra)
+- [🧩⠀resource "aws_s3_object" "extra_commands_folder" { ... }](#extra-folder)
+- [🧩⠀resource "aws_iam_user" "secret_reader" { ... }](#iam-user)
+- [🧩⠀resource "aws_iam_user_policy" "secret_reader" { ... }](#user-policy)
+- [🧩⠀resource "aws_iam_access_key" "secret_reader" { ... }](#access-key)
+
+<br><br>
+
 # 📜⠀main.tf
 
 This file contains the main infrastructure definition. It tells Terraform which provider to use and which AWS resources should exist.
 
 <br>
+
+<a id="terraform-block"></a>
 
 ## 🧩⠀terraform { ... }
 
@@ -23,6 +44,8 @@ terraform {
 
 <br>
 
+<a id="provider"></a>
+
 ## 🧩⠀provider "aws" { ... }
 
 This block tells Terraform how to connect to AWS. Terraform will create resources in the AWS region stored in the variable `aws_region`.
@@ -34,6 +57,8 @@ provider "aws" {
 ```
 
 <br>
+
+<a id="secret"></a>
 
 ## 🧩⠀resource "aws_secretsmanager_secret" "discord_bot_secret" { ... }
 
@@ -61,6 +86,8 @@ resource "aws_secretsmanager_secret" "discord_bot_secret" {
 
 <br>
 
+<a id="yt-secret"></a>
+
 ## 🧩⠀resource "aws_secretsmanager_secret" "youtube_cookies_secret" { ... }
 
 This block creates a second AWS Secrets Manager secret used to store the YouTube cookies file.
@@ -84,6 +111,8 @@ resource "aws_secretsmanager_secret" "youtube_cookies_secret" {
 - `tags`: Same ownership/management tags as the other resources.
 
 <br>
+
+<a id="policy-doc"></a>
 
 ## 🧩⠀data "aws_iam_policy_document" "secret_reader" { ... }
 
@@ -122,7 +151,95 @@ This is the most important least-privilege part of the design:
 - The user cannot read other secrets.
 - The user cannot manage other AWS resources.
 
+<hr>
+
+<h3 id="list-extra">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="22px" align="top"/>
+    ⠀dynamic "statement" — ListExtraCommandsBucket
+</h3>
+
+This optional statement is only added when `var.extra_commands_bucket` is not empty. It allows the IAM user to list objects under the `discord-music-bot/Extra_Commands/` prefix so the bot can discover which command files to download at startup.
+
+```terraform
+dynamic "statement" {
+    for_each = var.extra_commands_bucket != "" ? [1] : []
+
+    content {
+        sid    = "ListExtraCommandsBucket"
+        effect = "Allow"
+
+        actions = [
+            "s3:ListBucket"
+        ]
+
+        resources = [
+            "arn:aws:s3:::${var.extra_commands_bucket}"
+        ]
+
+        condition {
+            test     = "StringLike"
+            variable = "s3:prefix"
+            values   = ["discord-music-bot/Extra_Commands/*"]
+        }
+    }
+}
+```
+
+- `for_each = var.extra_commands_bucket != "" ? [1] : []`: Generates the statement only when a bucket name is provided.
+- `condition`: Restricts `s3:ListBucket` to the `discord-music-bot/Extra_Commands/` prefix only, so the user cannot list the rest of the bucket (including the Terraform state).
+
+<hr>
+
+<h3 id="get-extra">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="22px" align="top"/>
+    ⠀dynamic "statement" — GetExtraCommands
+</h3>
+
+This optional statement allows the IAM user to download the actual command files once they are discovered by the listing statement above.
+
+```terraform
+dynamic "statement" {
+    for_each = var.extra_commands_bucket != "" ? [1] : []
+
+    content {
+        sid    = "GetExtraCommands"
+        effect = "Allow"
+
+        actions = [
+            "s3:GetObject"
+        ]
+
+        resources = [
+            "arn:aws:s3:::${var.extra_commands_bucket}/discord-music-bot/Extra_Commands/*"
+        ]
+    }
+}
+```
+
+- `resources`: Scoped to only the `discord-music-bot/Extra_Commands/` path — the Terraform state and any other objects in the same bucket are not accessible.
+
 <br>
+
+<a id="extra-folder"></a>
+
+## 🧩⠀resource "aws_s3_object" "extra_commands_folder" { ... }
+
+This block creates the `discord-music-bot/Extra_Commands/` folder placeholder in S3. S3 has no real folders: a folder is just an empty object whose key ends with `/`. Only created when `extra_commands_bucket` is set.
+
+```terraform
+resource "aws_s3_object" "extra_commands_folder" {
+    count  = var.extra_commands_bucket != "" ? 1 : 0
+    bucket = var.extra_commands_bucket
+    key    = "discord-music-bot/Extra_Commands/"
+}
+```
+
+- `count`: Creates the object only when a bucket name is provided.
+- `key = "discord-music-bot/Extra_Commands/"`: The trailing `/` is what makes AWS Console display it as a folder.
+
+<br>
+
+<a id="iam-user"></a>
 
 ## 🧩⠀resource "aws_iam_user" "secret_reader" { ... }
 
@@ -150,6 +267,8 @@ resource "aws_iam_user" "secret_reader" {
 
 <br>
 
+<a id="user-policy"></a>
+
 ## 🧩⠀resource "aws_iam_user_policy" "secret_reader" { ... }
 
 This block attaches the policy document to the IAM user as an inline policy.
@@ -170,6 +289,8 @@ resource "aws_iam_user_policy" "secret_reader" {
     - One item at index `0`.
     - No items at all.
 - `policy`: This uses the policy document built earlier in the `data "aws_iam_policy_document"` block.
+
+<a id="access-key"></a>
 
 ## 🧩⠀resource "aws_iam_access_key" "secret_reader" { ... }
 

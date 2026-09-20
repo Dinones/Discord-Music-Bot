@@ -12,11 +12,14 @@ crash.log
 # OS / Editor
 .DS_Store
 .claude/
+CLAUDE.md
 .vscode/
 .idea/
 .venv
 __pycache__
 Logs/*
+Data/*
+*.csv
 *.mp3
 *.webm
 .codex
@@ -36,3 +39,4 @@ Youtube_Cookies.txt
 # Private
 Utils/Custom_Messages.py
 test.py
+Commands/Extra_Commands/*.py
