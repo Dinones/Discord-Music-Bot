@@ -3,13 +3,11 @@
     ⠀Table of Contents
 </h2>
 
-- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Discord.svg" width="16px" align="center"/> [Create the Discord Application](#create-app)
-- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Gear%202.svg" width="16px" align="center"/> [Configure the Bot User](#configure-bot)
-- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="16px" align="center"/> [Save the Bot Token](#save-token)
-- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="16px" align="center"/> [Configure Install Permissions](#install-permissions)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Discord.svg" width="16px" align="center"/> [ㅤCreate the Discord Application](#create-app)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Gear%202.svg" width="16px" align="center"/> [ㅤConfigure the Bot User](#configure-bot)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Key.svg" width="16px" align="center"/> [ㅤSave the Bot Token](#save-token)
+- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Lock.svg" width="16px" align="center"/> [ㅤConfigure Install Permissions](#install-permissions)
 - [🔗ㅤInstall the Bot in Your Server](#install-server)
-- [✅ㅤVerify the Setup](#verify)
-- <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Virus.svg" width="16px" align="center"/> [Troubleshooting](#troubleshooting)
 
 <br><br>
 

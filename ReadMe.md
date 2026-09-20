@@ -245,3 +245,21 @@ python Main.py
 source .venv/bin/activate
 python3 Main.py
 ```
+
+<br>
+
+<h2 id="troubleshooting">
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Virus.svg" width="30px" align="top"/>
+    ⠀Troubleshooting
+</h2>
+
+<h3>
+    <img src="https://raw.githubusercontent.com/Dinones/Repository-Images/master/SVG/Gear%203.svg" width="22px" align="top"/>
+    ⠀The Intro Audio Plays, but Songs are Skipped Continously
+</h3>
+
+If the intro `.mp3` plays fine but the songs never do _(there is silence and the queue advances by itself every few seconds)_, `yt-dlp` is most likely outdated. YouTube changes often and old `yt-dlp` versions return stream URLs that FFmpeg cannot read. Update it inside the virtual environment and restart the bot:
+
+```bash
+pip install -U yt-dlp
+```
